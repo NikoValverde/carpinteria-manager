@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { obtenerClientes, crearCliente } from "../../services/clientesService";
+import {
+  obtenerClientes,
+  crearCliente,
+  eliminarCliente,
+} from "../../services/clientesService";
 
 function ClientesPage() {
   const [clientes, setClientes] = useState([]);
@@ -38,6 +42,22 @@ function ClientesPage() {
       setNombre("");
       setTelefono("");
       setEmail("");
+
+      await cargarClientes();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleEliminar(id) {
+    const confirmar = window.confirm("¿Desea eliminar este cliente?");
+
+    if (!confirmar) return;
+
+    try {
+      const resultado = await eliminarCliente(id);
+
+      console.log("RESULTADO:", resultado);
 
       await cargarClientes();
     } catch (error) {
@@ -102,6 +122,8 @@ function ClientesPage() {
           <p>{cliente.telefono}</p>
 
           <p>{cliente.email}</p>
+
+          <button onClick={() => handleEliminar(cliente.id)}>Eliminar</button>
 
           <hr />
         </div>
