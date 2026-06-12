@@ -3,6 +3,7 @@ import {
   obtenerClientes,
   crearCliente,
   eliminarCliente,
+  actualizarCliente,
 } from "../../services/clientesService";
 
 function ClientesPage() {
@@ -11,6 +12,7 @@ function ClientesPage() {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
+  const [clienteEditando, setClienteEditando] = useState(null);
 
   async function cargarClientes() {
     try {
@@ -33,19 +35,31 @@ function ClientesPage() {
     e.preventDefault();
 
     try {
-      await crearCliente({
-        nombre,
-        telefono,
-        email,
-      });
+      if (clienteEditando) {
+        await actualizarCliente(clienteEditando.id, {
+          nombre,
+          telefono,
+          email,
+        });
+
+      } else {
+        console.log("CREANDO CLIENTE");
+
+        await crearCliente({
+          nombre,
+          telefono,
+          email,
+        });
+      }
 
       setNombre("");
       setTelefono("");
       setEmail("");
+      setClienteEditando(null);
 
       await cargarClientes();
     } catch (error) {
-      console.error(error);
+      console.error("ERROR:", error);
     }
   }
 
@@ -63,6 +77,16 @@ function ClientesPage() {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  function handleEditar(cliente) {
+    alert(`Editar: ${cliente.nombre}`);
+
+    setClienteEditando(cliente);
+
+    setNombre(cliente.nombre || "");
+    setTelefono(cliente.telefono || "");
+    setEmail(cliente.email || "");
   }
 
   return (
@@ -110,9 +134,12 @@ function ClientesPage() {
           />
         </div>
 
-        <button type="submit">Crear Cliente</button>
+        <button type="submit">
+          {clienteEditando ? "Guardar Cambios" : "Crear Cliente"}
+        </button>
       </form>
 
+      
       <hr />
 
       {clientes.map((cliente) => (
@@ -122,6 +149,8 @@ function ClientesPage() {
           <p>{cliente.telefono}</p>
 
           <p>{cliente.email}</p>
+
+          <button onClick={() => handleEditar(cliente)}>Editar</button>
 
           <button onClick={() => handleEliminar(cliente.id)}>Eliminar</button>
 
