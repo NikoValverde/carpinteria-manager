@@ -13,6 +13,8 @@ function ClientesPage() {
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [clienteEditando, setClienteEditando] = useState(null);
+  const [direccion, setDireccion] = useState("");
+  const [observaciones, setObservaciones] = useState("");
 
   async function cargarClientes() {
     try {
@@ -40,8 +42,9 @@ function ClientesPage() {
           nombre,
           telefono,
           email,
+          direccion,
+          observaciones,
         });
-
       } else {
         console.log("CREANDO CLIENTE");
 
@@ -49,12 +52,16 @@ function ClientesPage() {
           nombre,
           telefono,
           email,
+          direccion,
+          observaciones,
         });
       }
 
       setNombre("");
       setTelefono("");
       setEmail("");
+      setDireccion("");
+      setObservaciones("");
       setClienteEditando(null);
 
       await cargarClientes();
@@ -87,6 +94,8 @@ function ClientesPage() {
     setNombre(cliente.nombre || "");
     setTelefono(cliente.telefono || "");
     setEmail(cliente.email || "");
+    setDireccion(cliente.direccion || "");
+    setObservaciones(cliente.observaciones || "");
   }
 
   return (
@@ -134,12 +143,34 @@ function ClientesPage() {
           />
         </div>
 
+        <div>
+          <input
+            id="direccion"
+            name="direccion"
+            type="text"
+            placeholder="Dirección"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+
+        <div>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            placeholder="Observaciones"
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+            rows={4}
+          />
+        </div>
+
         <button type="submit">
           {clienteEditando ? "Guardar Cambios" : "Crear Cliente"}
         </button>
       </form>
 
-      
       <hr />
 
       {clientes.map((cliente) => (
@@ -149,6 +180,10 @@ function ClientesPage() {
           <p>{cliente.telefono}</p>
 
           <p>{cliente.email}</p>
+
+          <p>{cliente.direccion}</p>
+
+          <p>{cliente.observaciones}</p>
 
           <button onClick={() => handleEditar(cliente)}>Editar</button>
 
