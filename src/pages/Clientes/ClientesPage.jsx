@@ -46,7 +46,6 @@ function ClientesPage() {
           observaciones,
         });
       } else {
-        console.log("CREANDO CLIENTE");
 
         await crearCliente({
           nombre,
@@ -76,9 +75,7 @@ function ClientesPage() {
     if (!confirmar) return;
 
     try {
-      const resultado = await eliminarCliente(id);
-
-      console.log("RESULTADO:", resultado);
+      await eliminarCliente(id);
 
       await cargarClientes();
     } catch (error) {
