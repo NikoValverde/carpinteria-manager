@@ -165,11 +165,63 @@ function handleEditarMaterial(material) {
   setCantidad(material.cantidad);
 }
 
+const integrantesActivos = integrantes.filter((i) => i.activo);
+
 async function handleAgregarManoObra(e) {
   e.preventDefault();
 
   try {
+    if (integranteId === "todos") {
+      try {
+        const integrantesFaltantes = integrantesActivos.filter(
+          (integrante) =>
+            !manoObraPresupuesto.some(
+              (item) => item.integrante_id === integrante.id,
+            ),    
+        );
+        if (integrantesFaltantes.length === 0) {
+          alert("Todos los integrantes ya están agregados al presupuesto.");
+
+          return;
+        }
+
+        for (const integrante of integrantesFaltantes) {
+          const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+          await agregarManoObraPresupuesto({
+            presupuesto_id: Number(id),
+
+            integrante_id: integrante.id,
+
+            integrante_nombre: integrante.nombre,
+
+            dias: Number(dias),
+
+            jornal_utilizado: integrante.jornal_actual,
+
+            subtotal,
+          });
+        }
+
+        setIntegranteId("");
+        setDias("");
+
+        await cargarManoObra();
+
+        return;
+      } catch (error) {
+        console.error(error);
+      }
+    }
     const integrante = integrantes.find((i) => i.id === Number(integranteId));
+    const yaExiste = manoObraPresupuesto.some(
+      (item) => item.integrante_id === Number(integranteId),
+    );
+
+    if (yaExiste) {
+      alert("Ese integrante ya está agregado al presupuesto.");
+      return;
+    }
 
     if (!integrante) {
       throw new Error("Integrante no encontrado");
@@ -321,6 +373,7 @@ return (
         required
       >
         <option value="">Seleccionar integrante</option>
+        <option value="todos">Todos</option>
 
         {integrantes.map((integrante) => (
           <option key={integrante.id} value={integrante.id}>
