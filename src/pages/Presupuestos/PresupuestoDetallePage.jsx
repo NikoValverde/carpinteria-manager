@@ -11,14 +11,33 @@ import {
   actualizarMaterialPresupuesto,
 } from "../../services/presupuestoMaterialesService";
 
+import { obtenerIntegrantes } from "../../services/integrantesService";
+
+import {
+  obtenerManoObraPresupuesto,
+  agregarManoObraPresupuesto,
+  eliminarManoObraPresupuesto,
+} from "../../services/presupuestoManoObraService";
+
 function PresupuestoDetallePage() {
   const { id } = useParams();
+
+  // Estado para presupuesto
   const [presupuesto, setPresupuesto] = useState(null);
+
+  // Estado para materiales
   const [materiales, setMateriales] = useState([]);
   const [materialesPresupuesto, setMaterialesPresupuesto] = useState([]);
   const [materialId, setMaterialId] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [materialEditando, setMaterialEditando] = useState(null);
+
+  // Estado para mano de obra
+  const [integrantes, setIntegrantes] = useState([]);
+  const [manoObraPresupuesto, setManoObraPresupuesto] = useState([]);
+  const [integranteId, setIntegranteId] = useState("");
+  const [dias, setDias] = useState("");
+  const [precioFinal, setPrecioFinal] = useState("");
 
   async function cargarMateriales() {
     try {
@@ -40,11 +59,33 @@ function PresupuestoDetallePage() {
     }
   }
 
+  async function cargarIntegrantes() {
+    try {
+      const data = await obtenerIntegrantes();
+
+      setIntegrantes(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function cargarManoObra() {
+    try {
+      const data = await obtenerManoObraPresupuesto(id);
+
+      setManoObraPresupuesto(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
  
 useEffect(() => {
   const fetchData = async () => {
     await cargarMateriales();
     await cargarMaterialesPresupuesto();
+    await cargarIntegrantes();
+    await cargarManoObra();
     try {
       const data = await obtenerPresupuestoPorId(id);
 
@@ -124,6 +165,60 @@ function handleEditarMaterial(material) {
   setCantidad(material.cantidad);
 }
 
+async function handleAgregarManoObra(e) {
+  e.preventDefault();
+
+  try {
+    const integrante = integrantes.find((i) => i.id === Number(integranteId));
+
+    if (!integrante) {
+      throw new Error("Integrante no encontrado");
+    }
+
+    const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+    await agregarManoObraPresupuesto({
+      presupuesto_id: Number(id),
+
+      integrante_id: integrante.id,
+
+      integrante_nombre: integrante.nombre,
+
+      dias: Number(dias),
+
+      jornal_utilizado: integrante.jornal_actual,
+
+      subtotal,
+    });
+
+    setIntegranteId("");
+    setDias("");
+
+    await cargarManoObra();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function handleEliminarManoObra(id) {
+  const confirmar = window.confirm("¿Desea eliminar esta mano de obra?");
+
+  if (!confirmar) return;
+
+  try {
+    await eliminarManoObraPresupuesto(id);
+
+    await cargarManoObra();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const costoManoObra = manoObraPresupuesto.reduce(
+  (total, item) => total + Number(item.subtotal),
+  0,
+);
+
     if (!presupuesto) {
   return <p>Cargando...</p>;
 }
@@ -132,6 +227,9 @@ const costoMateriales = materialesPresupuesto.reduce(
   (total, material) => total + Number(material.subtotal),
   0,
 );
+
+const costoTotal = costoMateriales + costoManoObra;
+const ganancia = Number(precioFinal || 0) - costoTotal;
 
 return (
   <div>
@@ -211,6 +309,91 @@ return (
     ))}
 
     <h4>Costo Materiales: ${costoMateriales.toLocaleString("es-AR")}</h4>
+
+    <hr />
+
+    <h3>Mano de Obra</h3>
+
+    <form onSubmit={handleAgregarManoObra}>
+      <select
+        value={integranteId}
+        onChange={(e) => setIntegranteId(e.target.value)}
+        required
+      >
+        <option value="">Seleccionar integrante</option>
+
+        {integrantes.map((integrante) => (
+          <option key={integrante.id} value={integrante.id}>
+            {integrante.nombre}
+          </option>
+        ))}
+      </select>
+
+      <input
+        type="number"
+        step="0.5"
+        placeholder="Días"
+        value={dias}
+        onChange={(e) => setDias(e.target.value)}
+        required
+      />
+
+      <button type="submit">Agregar Mano de Obra</button>
+    </form>
+
+    {manoObraPresupuesto.map((item) => (
+      <div key={item.id}>
+        <p>
+          <strong>{item.integrante_nombre}</strong>
+        </p>
+
+        <p>{item.dias} días</p>
+
+        <p>${Number(item.subtotal).toLocaleString("es-AR")}</p>
+
+        <button onClick={() => handleEliminarManoObra(item.id)}>
+          Eliminar
+        </button>
+
+        <hr />
+      </div>
+    ))}
+
+    <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
+    <hr />
+
+    <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
+    <hr />
+
+    <h2>Resumen Financiero</h2>
+
+    <p>
+      <strong>Costo Materiales:</strong> $
+      {costoMateriales.toLocaleString("es-AR")}
+    </p>
+
+    <p>
+      <strong>Costo Mano de Obra:</strong> $
+      {costoManoObra.toLocaleString("es-AR")}
+    </p>
+
+    <p>
+      <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
+    </p>
+
+    <div>
+      <label>Precio Final</label>
+
+      <input
+        type="number"
+        value={precioFinal}
+        onChange={(e) => setPrecioFinal(e.target.value)}
+      />
+    </div>
+
+    <p>
+      <strong>Margen Comercial:</strong> ${ganancia.toLocaleString("es-AR")}
+    </p>
 
     {materialesPresupuesto.length === 0 && (
       <p>Todavía no hay materiales cargados.</p>
