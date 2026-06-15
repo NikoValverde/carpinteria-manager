@@ -1,7 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { obtenerPresupuestoPorId } from "../../services/presupuestosService";
+import {
+  obtenerPresupuestoPorId,
+  actualizarPresupuesto,
+} from "../../services/presupuestosService";
 import { obtenerMateriales } from "../../services/materialesService";
 
 import {
@@ -38,6 +41,10 @@ function PresupuestoDetallePage() {
   const [integranteId, setIntegranteId] = useState("");
   const [dias, setDias] = useState("");
   const [precioFinal, setPrecioFinal] = useState("");
+
+  const [porcentajeGanancia, setPorcentajeGanancia] = useState(35);
+
+  const [flete, setFlete] = useState(0);
 
   async function cargarMateriales() {
     try {
@@ -90,6 +97,10 @@ useEffect(() => {
       const data = await obtenerPresupuestoPorId(id);
 
       setPresupuesto(data);
+      setPrecioFinal(data.precio_final || "");
+      setFlete(data.flete || 0);
+
+      setPorcentajeGanancia(data.porcentaje_ganancia || 35);
     } catch (error) {
       console.error(error);
     }
@@ -271,6 +282,36 @@ const costoManoObra = manoObraPresupuesto.reduce(
   0,
 );
 
+async function guardarResumenFinanciero() {
+  try {
+    await actualizarPresupuesto(id, {
+      precio_final: Number(precioFinal) || 0,
+
+      flete: Number(flete) || 0,
+
+      porcentaje_ganancia: Number(porcentajeGanancia) || 0,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function redondear(valor, multiplo) {
+  return Math.ceil(valor / multiplo) * multiplo;
+}
+
+async function aplicarPrecioFinal(nuevoPrecio) {
+  try {
+    setPrecioFinal(nuevoPrecio);
+
+    await actualizarPresupuesto(id, {
+      precio_final: nuevoPrecio,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
     if (!presupuesto) {
   return <p>Cargando...</p>;
 }
@@ -281,7 +322,10 @@ const costoMateriales = materialesPresupuesto.reduce(
 );
 
 const costoTotal = costoMateriales + costoManoObra;
-const ganancia = Number(precioFinal || 0) - costoTotal;
+const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
+
+const precioCalculado = costoTotal + montoGanancia + Number(flete || 0);
+
 
 return (
   <div>
@@ -416,6 +460,7 @@ return (
     <hr />
 
     <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
+
     <hr />
 
     <h2>Resumen Financiero</h2>
@@ -435,18 +480,73 @@ return (
     </p>
 
     <div>
+      <label>Ganancia %</label>
+
+      <input
+        type="number"
+        value={porcentajeGanancia}
+        onChange={(e) => setPorcentajeGanancia(e.target.value)}
+        onBlur={guardarResumenFinanciero}
+      />
+    </div>
+
+    <p>
+      <strong>Monto Ganancia:</strong> ${montoGanancia.toLocaleString("es-AR")}
+    </p>
+
+    <div>
+      <label>Flete</label>
+
+      <input
+        type="number"
+        value={flete}
+        onChange={(e) => setFlete(e.target.value)}
+        onBlur={guardarResumenFinanciero}
+      />
+    </div>
+
+    <p>
+      <strong>Precio Calculado:</strong> $
+      {precioCalculado.toLocaleString("es-AR")}
+    </p>
+    <button
+      type="button"
+      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 10000))}
+    >
+      Redondear a 10.000
+    </button>
+
+    <button
+      type="button"
+      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 50000))}
+    >
+      Redondear a 50.000
+    </button>
+
+    <button
+      type="button"
+      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 100000))}
+    >
+      Redondear a 100.000
+    </button>
+
+    <button
+      type="button"
+      onClick={() => aplicarPrecioFinal(Math.round(precioCalculado))}
+    >
+      Copiar a Precio Final
+    </button>
+
+    <div>
       <label>Precio Final</label>
 
       <input
         type="number"
         value={precioFinal}
         onChange={(e) => setPrecioFinal(e.target.value)}
+        onBlur={guardarResumenFinanciero}
       />
     </div>
-
-    <p>
-      <strong>Margen Comercial:</strong> ${ganancia.toLocaleString("es-AR")}
-    </p>
 
     {materialesPresupuesto.length === 0 && (
       <p>Todavía no hay materiales cargados.</p>
