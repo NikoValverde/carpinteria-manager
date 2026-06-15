@@ -10,6 +10,7 @@ import ClientesPage from './pages/Clientes/ClientesPage'
 import MaterialesPage from './pages/Materiales/MaterialesPage'
 import IntegrantesPage from './pages/Integrantes/IntegrantesPage'
 import PresupuestosPage from './pages/Presupuestos/PresupuestosPage'
+import PresupuestoDetallePage from "./pages/Presupuestos/PresupuestoDetallePage";
 
 function App() {
   return (
@@ -20,10 +21,14 @@ function App() {
           <Route path="/materiales" element={<MaterialesPage />} />
           <Route path="/integrantes" element={<IntegrantesPage />} />
           <Route path="/presupuestos" element={<PresupuestosPage />} />
+          <Route
+            path="/presupuestos/:id"
+            element={<PresupuestoDetallePage />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App

@@ -4,6 +4,7 @@ import {
   crearPresupuesto,
 } from "../../services/presupuestosService";
 import { obtenerClientes } from "../../services/clientesService";
+import { Link } from "react-router-dom";
 
 function PresupuestosPage() {
   const [presupuestos, setPresupuestos] = useState([]);
@@ -201,6 +202,8 @@ function PresupuestosPage() {
             <strong>Precio Final:</strong> $
             {Number(presupuesto.precio_final || 0).toLocaleString("es-AR")}
           </p>
+
+          <Link to={`/presupuestos/${presupuesto.id}`}>Ver</Link>
 
           <hr />
         </div>

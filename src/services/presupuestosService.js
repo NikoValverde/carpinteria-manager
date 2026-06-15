@@ -30,3 +30,23 @@ export async function crearPresupuesto(presupuesto) {
 
   return data;
 }
+
+export async function obtenerPresupuestoPorId(id) {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .select(
+      `
+      *,
+      clientes(nombre)
+    `,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
