@@ -27,6 +27,8 @@ function PresupuestoDetallePage() {
 
   // Estado para presupuesto
   const [presupuesto, setPresupuesto] = useState(null);
+  const [observaciones, setObservaciones] = useState("");
+  const [notasInternas, setNotasInternas] = useState("");
 
   // Estado para materiales
   const [materiales, setMateriales] = useState([]);
@@ -41,9 +43,9 @@ function PresupuestoDetallePage() {
   const [integranteId, setIntegranteId] = useState("");
   const [dias, setDias] = useState("");
   const [precioFinal, setPrecioFinal] = useState("");
-
+  const [consumiblesImprevistos, setConsumiblesImprevistos] = useState(0);
   const [porcentajeGanancia, setPorcentajeGanancia] = useState(35);
-
+  const [descripcion, setDescripcion] = useState("");
   const [flete, setFlete] = useState(0);
 
   async function cargarMateriales() {
@@ -98,8 +100,11 @@ function PresupuestoDetallePage() {
         setPresupuesto(data);
         setPrecioFinal(data.precio_final || "");
         setFlete(data.flete || 0);
-
         setPorcentajeGanancia(data.porcentaje_ganancia || 35);
+        setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
+        setDescripcion(data.descripcion || "");
+        setObservaciones(data.observaciones || "");
+        setNotasInternas(data.notas_internas || "");
       } catch (error) {
         console.error(error);
       }
@@ -290,7 +295,8 @@ function PresupuestoDetallePage() {
     0,
   );
 
-  const costoTotal = costoMateriales + costoManoObra;
+  const costoTotal =
+    costoMateriales + costoManoObra + Number(consumiblesImprevistos || 0);
 
   const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
 
@@ -311,6 +317,8 @@ function PresupuestoDetallePage() {
         monto_ganancia: Number(montoGanancia) || 0,
 
         precio_trabajo: Number(precioTrabajo) || 0,
+
+        consumibles_imprevistos: Number(consumiblesImprevistos) || 0,
       });
     } catch (error) {
       console.error(error);
@@ -362,6 +370,36 @@ function PresupuestoDetallePage() {
     return Math.ceil(valor / multiplo) * multiplo;
   }
 
+  async function guardarDescripcion() {
+    try {
+      await actualizarPresupuesto(id, {
+        descripcion,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function guardarObservaciones() {
+    try {
+      await actualizarPresupuesto(id, {
+        observaciones,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function guardarNotasInternas() {
+    try {
+      await actualizarPresupuesto(id, {
+        notas_internas: notasInternas,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async function aplicarPrecioFinal(nuevoPrecio) {
     try {
       setPrecioFinal(nuevoPrecio);
@@ -403,6 +441,41 @@ function PresupuestoDetallePage() {
       </p>
 
       <hr />
+
+      <div>
+        <label>Detalles de Construcción</label>
+
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          onBlur={guardarDescripcion}
+          rows={5}
+          placeholder="Describa el trabajo a realizar..."
+        />
+      </div>
+
+      <div>
+        <label>Observaciones</label>
+
+        <textarea
+          value={observaciones}
+          onChange={(e) => setObservaciones(e.target.value)}
+          onBlur={guardarObservaciones}
+          rows={4}
+        />
+      </div>
+
+      <div>
+        <label>Notas Internas</label>
+        <small>No se imprime en el PDF</small>
+
+        <textarea
+          value={notasInternas}
+          onChange={(e) => setNotasInternas(e.target.value)}
+          onBlur={guardarNotasInternas}
+          rows={4}
+        />
+      </div>
 
       <h3>Materiales</h3>
       <form onSubmit={handleAgregarMaterial}>
@@ -515,6 +588,16 @@ function PresupuestoDetallePage() {
       <hr />
 
       <h2>Resumen Financiero</h2>
+      <div>
+        <label>Consumibles e Imprevistos</label>
+
+        <input
+          type="number"
+          value={consumiblesImprevistos}
+          onChange={(e) => setConsumiblesImprevistos(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
 
       <p>
         <strong>Costo Materiales:</strong> $
