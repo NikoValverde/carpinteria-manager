@@ -86,473 +86,525 @@ function PresupuestoDetallePage() {
     }
   }
 
- 
-useEffect(() => {
-  const fetchData = async () => {
-    await cargarMateriales();
-    await cargarMaterialesPresupuesto();
-    await cargarIntegrantes();
-    await cargarManoObra();
-    try {
-      const data = await obtenerPresupuestoPorId(id);
-
-      setPresupuesto(data);
-      setPrecioFinal(data.precio_final || "");
-      setFlete(data.flete || 0);
-
-      setPorcentajeGanancia(data.porcentaje_ganancia || 35);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  fetchData();
-}, [id]);
-
-async function handleAgregarMaterial(e) {
-  e.preventDefault();
-
-  try {
-    const materialSeleccionado = materiales.find(
-      (m) => m.id === Number(materialId),
-    );
-
-    if (!materialSeleccionado) {
-      throw new Error("Material no encontrado");
-    }
-
-    const subtotal = Number(cantidad) * Number(materialSeleccionado.precio);
-
-    if (materialEditando) {
-      await actualizarMaterialPresupuesto(materialEditando.id, {
-        material_id: materialSeleccionado.id,
-        material_nombre: materialSeleccionado.nombre,
-        cantidad: Number(cantidad),
-        unidad: materialSeleccionado.unidad,
-        precio_unitario: materialSeleccionado.precio,
-        subtotal,
-      });
-    } else {
-      await agregarMaterialPresupuesto({
-        presupuesto_id: Number(id),
-        material_id: materialSeleccionado.id,
-        material_nombre: materialSeleccionado.nombre,
-        cantidad: Number(cantidad),
-        unidad: materialSeleccionado.unidad,
-        precio_unitario: materialSeleccionado.precio,
-        subtotal,
-      });
-    }
-
-    setMaterialId("");
-    setCantidad("");
-    setMaterialEditando(null); 
-    await cargarMaterialesPresupuesto();
-
-  } catch (error) {
-    console.error("Error al agregar/editar material:", error);
-  }
-}
-
-
-async function handleEliminarMaterial(id) {
-  const confirmar = window.confirm("¿Desea eliminar este material?");
-
-  if (!confirmar) return;
-
-  try {
-    await eliminarMaterialPresupuesto(id);
-
-    await cargarMaterialesPresupuesto();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function handleEditarMaterial(material) {
-  setMaterialEditando(material);
-
-  setMaterialId(material.material_id);
-  setCantidad(material.cantidad);
-}
-
-const integrantesActivos = integrantes.filter((i) => i.activo);
-
-async function handleAgregarManoObra(e) {
-  e.preventDefault();
-
-  try {
-    if (integranteId === "todos") {
+  useEffect(() => {
+    const fetchData = async () => {
+      await cargarMateriales();
+      await cargarMaterialesPresupuesto();
+      await cargarIntegrantes();
+      await cargarManoObra();
       try {
-        const integrantesFaltantes = integrantesActivos.filter(
-          (integrante) =>
-            !manoObraPresupuesto.some(
-              (item) => item.integrante_id === integrante.id,
-            ),    
-        );
-        if (integrantesFaltantes.length === 0) {
-          alert("Todos los integrantes ya están agregados al presupuesto.");
+        const data = await obtenerPresupuestoPorId(id);
 
-          return;
-        }
+        setPresupuesto(data);
+        setPrecioFinal(data.precio_final || "");
+        setFlete(data.flete || 0);
 
-        for (const integrante of integrantesFaltantes) {
-          const subtotal = Number(dias) * Number(integrante.jornal_actual);
-
-          await agregarManoObraPresupuesto({
-            presupuesto_id: Number(id),
-
-            integrante_id: integrante.id,
-
-            integrante_nombre: integrante.nombre,
-
-            dias: Number(dias),
-
-            jornal_utilizado: integrante.jornal_actual,
-
-            subtotal,
-          });
-        }
-
-        setIntegranteId("");
-        setDias("");
-
-        await cargarManoObra();
-
-        return;
+        setPorcentajeGanancia(data.porcentaje_ganancia || 35);
       } catch (error) {
         console.error(error);
       }
+    };
+
+    fetchData();
+  }, [id]);
+
+  async function handleAgregarMaterial(e) {
+    e.preventDefault();
+
+    try {
+      const materialSeleccionado = materiales.find(
+        (m) => m.id === Number(materialId),
+      );
+
+      if (!materialSeleccionado) {
+        throw new Error("Material no encontrado");
+      }
+
+      const subtotal = Number(cantidad) * Number(materialSeleccionado.precio);
+
+      if (materialEditando) {
+        await actualizarMaterialPresupuesto(materialEditando.id, {
+          material_id: materialSeleccionado.id,
+          material_nombre: materialSeleccionado.nombre,
+          cantidad: Number(cantidad),
+          unidad: materialSeleccionado.unidad,
+          precio_unitario: materialSeleccionado.precio,
+          subtotal,
+        });
+      } else {
+        await agregarMaterialPresupuesto({
+          presupuesto_id: Number(id),
+          material_id: materialSeleccionado.id,
+          material_nombre: materialSeleccionado.nombre,
+          cantidad: Number(cantidad),
+          unidad: materialSeleccionado.unidad,
+          precio_unitario: materialSeleccionado.precio,
+          subtotal,
+        });
+      }
+
+      setMaterialId("");
+      setCantidad("");
+      setMaterialEditando(null);
+      await cargarMaterialesPresupuesto();
+    } catch (error) {
+      console.error("Error al agregar/editar material:", error);
     }
-    const integrante = integrantes.find((i) => i.id === Number(integranteId));
-    const yaExiste = manoObraPresupuesto.some(
-      (item) => item.integrante_id === Number(integranteId),
-    );
+  }
 
-    if (yaExiste) {
-      alert("Ese integrante ya está agregado al presupuesto.");
-      return;
+  async function handleEliminarMaterial(id) {
+    const confirmar = window.confirm("¿Desea eliminar este material?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarMaterialPresupuesto(id);
+
+      await cargarMaterialesPresupuesto();
+    } catch (error) {
+      console.error(error);
     }
+  }
 
-    if (!integrante) {
-      throw new Error("Integrante no encontrado");
+  function handleEditarMaterial(material) {
+    setMaterialEditando(material);
+
+    setMaterialId(material.material_id);
+    setCantidad(material.cantidad);
+  }
+
+  const integrantesActivos = integrantes.filter((i) => i.activo);
+
+  async function handleAgregarManoObra(e) {
+    e.preventDefault();
+
+    try {
+      if (integranteId === "todos") {
+        try {
+          const integrantesFaltantes = integrantesActivos.filter(
+            (integrante) =>
+              !manoObraPresupuesto.some(
+                (item) => item.integrante_id === integrante.id,
+              ),
+          );
+
+          if (integrantesFaltantes.length === 0) {
+            alert("Todos los integrantes ya están agregados al presupuesto.");
+            return;
+          }
+
+          for (const integrante of integrantesFaltantes) {
+            const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+            await agregarManoObraPresupuesto({
+              presupuesto_id: Number(id),
+
+              integrante_id: integrante.id,
+
+              integrante_nombre: integrante.nombre,
+
+              dias: Number(dias),
+
+              jornal_utilizado: integrante.jornal_actual,
+
+              subtotal,
+            });
+          }
+
+          setIntegranteId("");
+          setDias("");
+
+          await cargarManoObra();
+          await actualizarCostosPresupuesto();
+
+          return;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      const integrante = integrantes.find((i) => i.id === Number(integranteId));
+
+      const yaExiste = manoObraPresupuesto.some(
+        (item) => item.integrante_id === Number(integranteId),
+      );
+
+      if (yaExiste) {
+        alert("Ese integrante ya está agregado al presupuesto.");
+        return;
+      }
+
+      if (!integrante) {
+        throw new Error("Integrante no encontrado");
+      }
+
+      const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+      await agregarManoObraPresupuesto({
+        presupuesto_id: Number(id),
+
+        integrante_id: integrante.id,
+
+        integrante_nombre: integrante.nombre,
+
+        dias: Number(dias),
+
+        jornal_utilizado: integrante.jornal_actual,
+
+        subtotal,
+      });
+
+      setIntegranteId("");
+      setDias("");
+
+      await cargarManoObra();
+      await actualizarCostosPresupuesto();
+    } catch (error) {
+      console.error(error);
     }
-
-    const subtotal = Number(dias) * Number(integrante.jornal_actual);
-
-    await agregarManoObraPresupuesto({
-      presupuesto_id: Number(id),
-
-      integrante_id: integrante.id,
-
-      integrante_nombre: integrante.nombre,
-
-      dias: Number(dias),
-
-      jornal_utilizado: integrante.jornal_actual,
-
-      subtotal,
-    });
-
-    setIntegranteId("");
-    setDias("");
-
-    await cargarManoObra();
-  } catch (error) {
-    console.error(error);
   }
-}
 
-async function handleEliminarManoObra(id) {
-  const confirmar = window.confirm("¿Desea eliminar esta mano de obra?");
+  async function handleEliminarManoObra(id) {
+    const confirmar = window.confirm("¿Desea eliminar esta mano de obra?");
 
-  if (!confirmar) return;
+    if (!confirmar) return;
 
-  try {
-    await eliminarManoObraPresupuesto(id);
+    try {
+      await eliminarManoObraPresupuesto(id);
 
-    await cargarManoObra();
-  } catch (error) {
-    console.error(error);
+      await cargarManoObra();
+
+      await actualizarCostosPresupuesto();
+    } catch (error) {
+      console.error(error);
+    }
   }
-}
 
-const costoManoObra = manoObraPresupuesto.reduce(
-  (total, item) => total + Number(item.subtotal),
-  0,
-);
+  const costoManoObra = manoObraPresupuesto.reduce(
+    (total, item) => total + Number(item.subtotal),
+    0,
+  );
 
-async function guardarResumenFinanciero() {
-  try {
-    await actualizarPresupuesto(id, {
-      precio_final: Number(precioFinal) || 0,
+  const costoMateriales = materialesPresupuesto.reduce(
+    (total, material) => total + Number(material.subtotal),
+    0,
+  );
 
-      flete: Number(flete) || 0,
+  const costoTotal = costoMateriales + costoManoObra;
 
-      porcentaje_ganancia: Number(porcentajeGanancia) || 0,
-    });
-  } catch (error) {
-    console.error(error);
+  const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
+
+  // Valor del trabajo sin considerar flete
+  const precioTrabajo = costoTotal + montoGanancia;
+
+  const precioCalculado = precioTrabajo + Number(flete || 0);
+
+  async function guardarResumenFinanciero() {
+    try {
+      await actualizarPresupuesto(id, {
+        precio_final: Number(precioFinal) || 0,
+
+        flete: Number(flete) || 0,
+
+        porcentaje_ganancia: Number(porcentajeGanancia) || 0,
+
+        monto_ganancia: Number(montoGanancia) || 0,
+
+        precio_trabajo: Number(precioTrabajo) || 0,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
-}
 
-function redondear(valor, multiplo) {
-  return Math.ceil(valor / multiplo) * multiplo;
-}
+  async function actualizarCostosPresupuesto() {
+    try {
+      const materialesActualizados = await obtenerMaterialesPresupuesto(id);
 
-async function aplicarPrecioFinal(nuevoPrecio) {
-  try {
-    setPrecioFinal(nuevoPrecio);
+      const manoObraActualizada = await obtenerManoObraPresupuesto(id);
 
-    await actualizarPresupuesto(id, {
-      precio_final: nuevoPrecio,
-    });
-  } catch (error) {
-    console.error(error);
+      const costoMaterialesActualizado = materialesActualizados.reduce(
+        (total, material) => total + Number(material.subtotal),
+        0,
+      );
+
+      const costoManoObraActualizado = manoObraActualizada.reduce(
+        (total, item) => total + Number(item.subtotal),
+        0,
+      );
+
+      const costoTotalActualizado =
+        costoMaterialesActualizado + costoManoObraActualizado;
+
+      const montoGananciaActualizado =
+        costoTotalActualizado * (Number(porcentajeGanancia) / 100);
+
+      const precioTrabajoActualizado =
+        costoTotalActualizado + montoGananciaActualizado;
+
+      await actualizarPresupuesto(id, {
+        costo_materiales: costoMaterialesActualizado,
+
+        costo_mano_obra: costoManoObraActualizado,
+
+        costo_total: costoTotalActualizado,
+
+        monto_ganancia: montoGananciaActualizado,
+
+        precio_trabajo: precioTrabajoActualizado,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
-}
 
-    if (!presupuesto) {
-  return <p>Cargando...</p>;
-}
+  function redondear(valor, multiplo) {
+    return Math.ceil(valor / multiplo) * multiplo;
+  }
 
-const costoMateriales = materialesPresupuesto.reduce(
-  (total, material) => total + Number(material.subtotal),
-  0,
-);
+  async function aplicarPrecioFinal(nuevoPrecio) {
+    try {
+      setPrecioFinal(nuevoPrecio);
 
-const costoTotal = costoMateriales + costoManoObra;
-const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
+      await actualizarPresupuesto(id, {
+        precio_final: nuevoPrecio,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-const precioCalculado = costoTotal + montoGanancia + Number(flete || 0);
+  if (!presupuesto) {
+    return <p>Cargando...</p>;
+  }
 
+  return (
+    <div>
+      <h2>{presupuesto.numero}</h2>
 
-return (
-  <div>
-    <h2>{presupuesto.numero}</h2>
+      <p>
+        <strong>Título:</strong> {presupuesto.titulo}
+      </p>
 
-    <p>
-      <strong>Título:</strong> {presupuesto.titulo}
-    </p>
+      <p>
+        <strong>Categoría:</strong> {presupuesto.categoria_trabajo}
+      </p>
 
-    <p>
-      <strong>Categoría:</strong> {presupuesto.categoria_trabajo}
-    </p>
+      <p>
+        <strong>Cliente:</strong> {presupuesto.clientes?.nombre}
+      </p>
 
-    <p>
-      <strong>Cliente:</strong> {presupuesto.clientes?.nombre}
-    </p>
+      <p>
+        <strong>Tipo:</strong> {presupuesto.tipo_trabajo}
+      </p>
 
-    <p>
-      <strong>Tipo:</strong> {presupuesto.tipo_trabajo}
-    </p>
+      <p>
+        <strong>Estado:</strong> {presupuesto.estado}
+      </p>
 
-    <p>
-      <strong>Estado:</strong> {presupuesto.estado}
-    </p>
+      <hr />
 
-    <hr />
+      <h3>Materiales</h3>
+      <form onSubmit={handleAgregarMaterial}>
+        <select
+          value={materialId}
+          onChange={(e) => setMaterialId(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar material</option>
 
-    <h3>Materiales</h3>
-    <form onSubmit={handleAgregarMaterial}>
-      <select
-        value={materialId}
-        onChange={(e) => setMaterialId(e.target.value)}
-        required
+          {materiales.map((material) => (
+            <option key={material.id} value={material.id}>
+              {material.nombre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Cantidad"
+          value={cantidad}
+          onChange={(e) => setCantidad(e.target.value)}
+          required
+        />
+
+        <button type="submit">
+          {materialEditando ? "Guardar Cambios" : "Agregar Material"}
+        </button>
+      </form>
+      {materialesPresupuesto.map((material) => (
+        <div key={material.id}>
+          <p>
+            <strong>{material.material_nombre}</strong>
+          </p>
+
+          <p>
+            {material.cantidad} {material.unidad}
+          </p>
+
+          <p>${Number(material.subtotal).toLocaleString("es-AR")}</p>
+
+          <button onClick={() => handleEditarMaterial(material)}>Editar</button>
+
+          <button onClick={() => handleEliminarMaterial(material.id)}>
+            Eliminar
+          </button>
+
+          <hr />
+        </div>
+      ))}
+
+      <h4>Costo Materiales: ${costoMateriales.toLocaleString("es-AR")}</h4>
+
+      <hr />
+
+      <h3>Mano de Obra</h3>
+
+      <form onSubmit={handleAgregarManoObra}>
+        <select
+          value={integranteId}
+          onChange={(e) => setIntegranteId(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar integrante</option>
+          <option value="todos">Todos</option>
+
+          {integrantes.map((integrante) => (
+            <option key={integrante.id} value={integrante.id}>
+              {integrante.nombre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          step="0.5"
+          placeholder="Días"
+          value={dias}
+          onChange={(e) => setDias(e.target.value)}
+          required
+        />
+
+        <button type="submit">Agregar Mano de Obra</button>
+      </form>
+
+      {manoObraPresupuesto.map((item) => (
+        <div key={item.id}>
+          <p>
+            <strong>{item.integrante_nombre}</strong>
+          </p>
+
+          <p>{item.dias} días</p>
+
+          <p>${Number(item.subtotal).toLocaleString("es-AR")}</p>
+
+          <button onClick={() => handleEliminarManoObra(item.id)}>
+            Eliminar
+          </button>
+
+          <hr />
+        </div>
+      ))}
+
+      <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
+      <hr />
+
+      <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
+
+      <hr />
+
+      <h2>Resumen Financiero</h2>
+
+      <p>
+        <strong>Costo Materiales:</strong> $
+        {costoMateriales.toLocaleString("es-AR")}
+      </p>
+
+      <p>
+        <strong>Costo Mano de Obra:</strong> $
+        {costoManoObra.toLocaleString("es-AR")}
+      </p>
+
+      <p>
+        <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
+      </p>
+
+      <div>
+        <label>Ganancia %</label>
+
+        <input
+          type="number"
+          value={porcentajeGanancia}
+          onChange={(e) => setPorcentajeGanancia(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Monto Ganancia:</strong> $
+        {montoGanancia.toLocaleString("es-AR")}
+      </p>
+
+      <div>
+        <label>Flete</label>
+
+        <input
+          type="number"
+          value={flete}
+          onChange={(e) => setFlete(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Precio Calculado:</strong> $
+        {precioCalculado.toLocaleString("es-AR")}
+      </p>
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 10000))}
       >
-        <option value="">Seleccionar material</option>
-
-        {materiales.map((material) => (
-          <option key={material.id} value={material.id}>
-            {material.nombre}
-          </option>
-        ))}
-      </select>
-
-      <input
-        type="number"
-        step="0.01"
-        placeholder="Cantidad"
-        value={cantidad}
-        onChange={(e) => setCantidad(e.target.value)}
-        required
-      />
-
-      <button type="submit">
-        {materialEditando ? "Guardar Cambios" : "Agregar Material"}
+        Redondear a 10.000
       </button>
-    </form>
-    {materialesPresupuesto.map((material) => (
-      <div key={material.id}>
-        <p>
-          <strong>{material.material_nombre}</strong>
-        </p>
 
-        <p>
-          {material.cantidad} {material.unidad}
-        </p>
-
-        <p>${Number(material.subtotal).toLocaleString("es-AR")}</p>
-
-        <button onClick={() => handleEditarMaterial(material)}>Editar</button>
-
-        <button onClick={() => handleEliminarMaterial(material.id)}>
-          Eliminar
-        </button>
-
-        <hr />
-      </div>
-    ))}
-
-    <h4>Costo Materiales: ${costoMateriales.toLocaleString("es-AR")}</h4>
-
-    <hr />
-
-    <h3>Mano de Obra</h3>
-
-    <form onSubmit={handleAgregarManoObra}>
-      <select
-        value={integranteId}
-        onChange={(e) => setIntegranteId(e.target.value)}
-        required
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 50000))}
       >
-        <option value="">Seleccionar integrante</option>
-        <option value="todos">Todos</option>
+        Redondear a 50.000
+      </button>
 
-        {integrantes.map((integrante) => (
-          <option key={integrante.id} value={integrante.id}>
-            {integrante.nombre}
-          </option>
-        ))}
-      </select>
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 100000))}
+      >
+        Redondear a 100.000
+      </button>
 
-      <input
-        type="number"
-        step="0.5"
-        placeholder="Días"
-        value={dias}
-        onChange={(e) => setDias(e.target.value)}
-        required
-      />
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(Math.round(precioCalculado))}
+      >
+        Copiar a Precio Final
+      </button>
 
-      <button type="submit">Agregar Mano de Obra</button>
-    </form>
+      <div>
+        <label>Precio Final</label>
 
-    {manoObraPresupuesto.map((item) => (
-      <div key={item.id}>
-        <p>
-          <strong>{item.integrante_nombre}</strong>
-        </p>
-
-        <p>{item.dias} días</p>
-
-        <p>${Number(item.subtotal).toLocaleString("es-AR")}</p>
-
-        <button onClick={() => handleEliminarManoObra(item.id)}>
-          Eliminar
-        </button>
-
-        <hr />
+        <input
+          type="number"
+          value={precioFinal}
+          onChange={(e) => setPrecioFinal(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
       </div>
-    ))}
 
-    <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
-    <hr />
-
-    <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
-
-    <hr />
-
-    <h2>Resumen Financiero</h2>
-
-    <p>
-      <strong>Costo Materiales:</strong> $
-      {costoMateriales.toLocaleString("es-AR")}
-    </p>
-
-    <p>
-      <strong>Costo Mano de Obra:</strong> $
-      {costoManoObra.toLocaleString("es-AR")}
-    </p>
-
-    <p>
-      <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
-    </p>
-
-    <div>
-      <label>Ganancia %</label>
-
-      <input
-        type="number"
-        value={porcentajeGanancia}
-        onChange={(e) => setPorcentajeGanancia(e.target.value)}
-        onBlur={guardarResumenFinanciero}
-      />
+      {materialesPresupuesto.length === 0 && (
+        <p>Todavía no hay materiales cargados.</p>
+      )}
     </div>
-
-    <p>
-      <strong>Monto Ganancia:</strong> ${montoGanancia.toLocaleString("es-AR")}
-    </p>
-
-    <div>
-      <label>Flete</label>
-
-      <input
-        type="number"
-        value={flete}
-        onChange={(e) => setFlete(e.target.value)}
-        onBlur={guardarResumenFinanciero}
-      />
-    </div>
-
-    <p>
-      <strong>Precio Calculado:</strong> $
-      {precioCalculado.toLocaleString("es-AR")}
-    </p>
-    <button
-      type="button"
-      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 10000))}
-    >
-      Redondear a 10.000
-    </button>
-
-    <button
-      type="button"
-      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 50000))}
-    >
-      Redondear a 50.000
-    </button>
-
-    <button
-      type="button"
-      onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 100000))}
-    >
-      Redondear a 100.000
-    </button>
-
-    <button
-      type="button"
-      onClick={() => aplicarPrecioFinal(Math.round(precioCalculado))}
-    >
-      Copiar a Precio Final
-    </button>
-
-    <div>
-      <label>Precio Final</label>
-
-      <input
-        type="number"
-        value={precioFinal}
-        onChange={(e) => setPrecioFinal(e.target.value)}
-        onBlur={guardarResumenFinanciero}
-      />
-    </div>
-
-    {materialesPresupuesto.length === 0 && (
-      <p>Todavía no hay materiales cargados.</p>
-    )}
-  </div>
-);
+  );
 }
 
 export default PresupuestoDetallePage;
