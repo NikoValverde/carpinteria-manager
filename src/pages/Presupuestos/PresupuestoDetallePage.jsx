@@ -594,7 +594,7 @@ function PresupuestoDetallePage() {
 
     if (opcionales?.trim()) {
       y = dibujarCaja(doc, margen, y, anchoUtil, "OPCIONALES", opcionales);
-      y += 4;
+      y += 2;
     }
 
     // TOTAL PRESUPUESTADO (incluye Valor Opcional y Total con Opcional si corresponde)
@@ -607,32 +607,56 @@ function PresupuestoDetallePage() {
 
     doc.setFontSize(16);
     doc.setFont(undefined, "bold");
+
     doc.text(
       `$${Number(precioFinal || 0).toLocaleString("es-AR")}`,
       anchoHoja / 2,
-      y + 19,
-      { align: "center" },
+      y + 18,
+      {
+        align: "center",
+      },
     );
+
     doc.setFont(undefined, "normal");
 
-    let altoCajaTotal = 23;
+    let altoCajaTotal = 24;
 
     if (opcionales?.trim()) {
+      doc.line(margen + 20, y + 24, margen + anchoUtil - 20, y + 24);
+
       doc.setFontSize(9);
+
       doc.text(
-        `Valor Opcional: $${Number(precioOpcional || 0).toLocaleString("es-AR")}`,
+        `Valor Opcional: $${Number(precioOpcional || 0).toLocaleString(
+          "es-AR",
+        )}`,
         anchoHoja / 2,
-        y + 26,
-        { align: "center" },
-      );
-      doc.text(
-        `Total con Opcional: $${Number(totalConOpcional || 0).toLocaleString("es-AR")}`,
-        anchoHoja / 2,
-        y + 32,
-        { align: "center" },
+        y + 31,
+        {
+          align: "center",
+        },
       );
 
-      altoCajaTotal = 35;
+      doc.setFont(undefined, "bold");
+
+      doc.text(`TOTAL CON OPCIONAL`, anchoHoja / 2, y + 38, {
+        align: "center",
+      });
+
+      doc.setFontSize(12);
+
+      doc.text(
+        `$${Number(totalConOpcional || 0).toLocaleString("es-AR")}`,
+        anchoHoja / 2,
+        y + 45,
+        {
+          align: "center",
+        },
+      );
+
+      doc.setFont(undefined, "normal");
+
+      altoCajaTotal = 50;
     }
 
     doc.rect(margen, y, anchoUtil, altoCajaTotal);
