@@ -1,0 +1,59 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+build/
+
+# Git
+.git/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Cobertura
+coverage/
+
+# Temporales
+tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel/
+
+# PDFs generados
+*.pdf
+
+# Bases locales
+*.db
+*.sqlite
+
+# Locks
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# SVG e imágenes
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif

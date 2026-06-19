@@ -1,0 +1,2765 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.gitignore
+.repomixignore
+eslint.config.js
+index.html
+package.json
+README.md
+src/App.css
+src/App.jsx
+src/index.css
+src/layouts/MainLayout.jsx
+src/lib/supabase.js
+src/main.jsx
+src/pages/Clientes/ClientesPage.jsx
+src/pages/Integrantes/IntegrantesPage.jsx
+src/pages/Materiales/MaterialesPage.jsx
+src/pages/Presupuestos/PresupuestoDetallePage.jsx
+src/pages/Presupuestos/PresupuestosPage.jsx
+src/services/clientesService.js
+src/services/integrantesService.js
+src/services/materialesService.js
+src/services/presupuestoManoObraService.js
+src/services/presupuestoMaterialesService.js
+src/services/presupuestosService.js
+vite.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".repomixignore">
+# Dependencias
+node_modules/
+
+# Build
+dist/
+build/
+
+# Git
+.git/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Cobertura
+coverage/
+
+# Temporales
+tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel/
+
+# PDFs generados
+*.pdf
+
+# Bases locales
+*.db
+*.sqlite
+
+# Locks
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# SVG e imágenes
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+])
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>carpinteria-manager</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="package.json">
+{
+  "name": "carpinteria-manager",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.17.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "vite": "^8.0.12"
+  }
+}
+</file>
+
+<file path="README.md">
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+</file>
+
+<file path="src/App.css">
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+</file>
+
+<file path="src/index.css">
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+</file>
+
+<file path="src/layouts/MainLayout.jsx">
+import { Link, Outlet } from 'react-router-dom'
+
+function MainLayout() {
+  return (
+    <div>
+      <h1>Carpintería Manager</h1>
+
+      <nav>
+        <Link to="/">Clientes</Link> |{' '}
+        <Link to="/materiales">Materiales</Link> |{' '}
+        <Link to="/integrantes">Integrantes</Link> |{' '}
+        <Link to="/presupuestos">Presupuestos</Link>
+      </nav>
+
+      <hr />
+
+      <Outlet />
+    </div>
+  )
+}
+
+export default MainLayout
+</file>
+
+<file path="src/lib/supabase.js">
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+)
+</file>
+
+<file path="src/main.jsx">
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+</file>
+
+<file path="src/services/integrantesService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerIntegrantes() {
+  const { data, error } = await supabase
+    .from("integrantes")
+    .select("*")
+    .order("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function crearIntegrante(integrante) {
+  const { data, error } = await supabase
+    .from("integrantes")
+    .insert([integrante])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function eliminarIntegrante(id) {
+  const { data, error } = await supabase
+    .from("integrantes")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarIntegrante(id, integrante) {
+  const { data, error } = await supabase
+    .from("integrantes")
+    .update(integrante)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="src/services/materialesService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerMateriales() {
+  const { data, error } = await supabase
+    .from("materiales")
+    .select("*")
+    .order("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function crearMaterial(material) {
+  const { data, error } = await supabase
+    .from("materiales")
+    .insert([material])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function eliminarMaterial(id) {
+  const { data, error } = await supabase
+    .from("materiales")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarMaterial(id, material) {
+  const { data, error } = await supabase
+    .from("materiales")
+    .update(material)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="src/services/presupuestoManoObraService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerManoObraPresupuesto(presupuestoId) {
+  const { data, error } = await supabase
+    .from("presupuesto_mano_obra")
+    .select("*")
+    .eq("presupuesto_id", presupuestoId)
+    .order("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function agregarManoObraPresupuesto(manoObra) {
+  const { data, error } = await supabase
+    .from("presupuesto_mano_obra")
+    .insert([manoObra])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function eliminarManoObraPresupuesto(id) {
+  const { data, error } = await supabase
+    .from("presupuesto_mano_obra")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="src/services/presupuestoMaterialesService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerMaterialesPresupuesto(presupuestoId) {
+  const { data, error } = await supabase
+    .from("presupuesto_materiales")
+    .select("*")
+    .eq("presupuesto_id", presupuestoId)
+    .order("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function agregarMaterialPresupuesto(material) {
+  const { data, error } = await supabase
+    .from("presupuesto_materiales")
+    .insert([material])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function eliminarMaterialPresupuesto(id) {
+  const { data, error } = await supabase
+    .from("presupuesto_materiales")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarMaterialPresupuesto(id, material) {
+  const { data, error } = await supabase
+    .from("presupuesto_materiales")
+    .update(material)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="vite.config.js">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+</file>
+
+<file path="src/pages/Integrantes/IntegrantesPage.jsx">
+import { useEffect, useState } from "react";
+import {
+  obtenerIntegrantes,
+  crearIntegrante,
+  eliminarIntegrante,
+  actualizarIntegrante,
+} from "../../services/integrantesService";
+
+function IntegrantesPage() {
+  const [integrantes, setIntegrantes] = useState([]);
+  const [integranteEditando, setIntegranteEditando] = useState(null);
+  const [nombre, setNombre] = useState("");
+  const [porcentaje, setPorcentaje] = useState("");
+  const [jornalActual, setJornalActual] = useState("");
+  const [activo, setActivo] = useState(true);
+
+  async function cargarIntegrantes() {
+    try {
+      const data = await obtenerIntegrantes();
+      setIntegrantes(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await cargarIntegrantes();
+    };
+
+    fetchData();
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    try {
+      if (integranteEditando) {
+        await actualizarIntegrante(integranteEditando.id, {
+          nombre,
+          porcentaje,
+          jornal_actual: jornalActual,
+          activo,
+        });
+      } else {
+        await crearIntegrante({
+          nombre,
+          porcentaje,
+          jornal_actual: jornalActual,
+          activo,
+        });
+      }
+
+      setNombre("");
+      setPorcentaje("");
+      setJornalActual("");
+      setActivo(true);
+      setIntegranteEditando(null);
+
+      await cargarIntegrantes();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleEliminar(id) {
+    const confirmar = window.confirm("¿Desea eliminar este integrante?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarIntegrante(id);
+
+      await cargarIntegrantes();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleEditar(integrante) {
+    setIntegranteEditando(integrante);
+
+    setNombre(integrante.nombre || "");
+    setPorcentaje(integrante.porcentaje || "");
+    setJornalActual(integrante.jornal_actual || "");
+    setActivo(integrante.activo);
+  }
+
+  return (
+    <div>
+      <h2>Integrantes</h2>
+
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <input
+            type="number"
+            placeholder="Porcentaje"
+            value={porcentaje}
+            onChange={(e) => setPorcentaje(e.target.value)}
+            min="0"
+            max="100"
+            required
+          />
+        </div>
+
+        <div>
+          <input
+            type="number"
+            placeholder="Jornal"
+            value={jornalActual}
+            onChange={(e) => setJornalActual(e.target.value)}
+            min="0"
+            required
+          />
+        </div>
+
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={activo}
+              onChange={(e) => setActivo(e.target.checked)}
+            />
+            Activo
+          </label>
+        </div>
+
+        <button type="submit">
+          {integranteEditando ? "Guardar Cambios" : "Crear Integrante"}
+        </button>
+      </form>
+
+      <hr />
+
+      {integrantes.map((integrante) => (
+        <div key={integrante.id}>
+          <strong>{integrante.nombre}</strong>
+
+          <p>Porcentaje: {integrante.porcentaje}%</p>
+
+          <p>Jornal: ${integrante.jornal_actual}</p>
+
+          <p>
+            Estado:
+            {integrante.activo ? " Activo" : " Inactivo"}
+          </p>
+          <button onClick={() => handleEditar(integrante)}>Editar</button>
+          <button onClick={() => handleEliminar(integrante.id)}>
+            Eliminar
+          </button>
+
+          <hr />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default IntegrantesPage;
+</file>
+
+<file path="src/pages/Materiales/MaterialesPage.jsx">
+import { useEffect, useState } from "react";
+import {
+  obtenerMateriales,
+  crearMaterial,
+  eliminarMaterial,
+  actualizarMaterial,
+} from "../../services/materialesService";
+
+function MaterialesPage() {
+  const [materiales, setMateriales] = useState([]);
+  const [materialEditando, setMaterialEditando] = useState(null);
+  const [nombre, setNombre] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [unidad, setUnidad] = useState("");
+  const [precio, setPrecio] = useState("");
+
+  async function cargarMateriales() {
+    try {
+      const data = await obtenerMateriales();
+      setMateriales(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await cargarMateriales();
+    };
+    fetchData();
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    try {
+      if (materialEditando) {
+        await actualizarMaterial(materialEditando.id, {
+          nombre,
+          categoria,
+          unidad,
+          precio,
+        });
+      } else {
+        await crearMaterial({
+          nombre,
+          categoria,
+          unidad,
+          precio,
+        });
+      }
+
+      setNombre("");
+      setCategoria("");
+      setUnidad("");
+      setPrecio("");
+      setMaterialEditando(null);
+
+      await cargarMateriales();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleEliminar(id) {
+    const confirmar = window.confirm("¿Desea eliminar este material?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarMaterial(id);
+
+      await cargarMateriales();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleEditar(material) {
+    setMaterialEditando(material);
+
+    setNombre(material.nombre || "");
+    setCategoria(material.categoria || "");
+    setUnidad(material.unidad || "");
+    setPrecio(material.precio || "");
+  }
+
+  return (
+    <div>
+      <h2>Materiales</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <select
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            required
+          >
+            <option value="">Seleccione una categoría</option>
+
+            <option value="Melamina">Melamina</option>
+            <option value="MDF">MDF</option>
+            <option value="Herraje">Herraje</option>
+            <option value="Caño">Caño</option>
+            <option value="Chapa">Chapa</option>
+            <option value="Vidrio">Vidrio</option>
+            <option value="Aluminio">Aluminio</option>
+            <option value="Policarbonato">Policarbonato</option>
+            <option value="Pintura">Pintura</option>
+            <option value="Consumible">Consumible</option>
+            <option value="Madera">Madera</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <select
+            value={unidad}
+            onChange={(e) => setUnidad(e.target.value)}
+            required
+          >
+            <option value="">Seleccione una unidad</option>
+
+            <option value="Placa">Placa</option>
+            <option value="Unidad">Unidad</option>
+            <option value="Barra 6m">Barra 6m</option>
+            <option value="Metro">Metro</option>
+            <option value="m²">m²</option>
+            <option value="Litro">Litro</option>
+            <option value="Kg">Kg</option>
+            <option value="Hoja">Hoja</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <input
+            type="number"
+            placeholder="Precio"
+            value={precio}
+            onChange={(e) => setPrecio(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit">
+          {materialEditando ? "Guardar Cambios" : "Crear Material"}
+        </button>
+      </form>
+
+      <hr />
+
+      {materiales.map((material) => (
+        <div key={material.id}>
+          <strong>{material.nombre}</strong>
+          <p>{material.categoria}</p>
+          <p>{material.unidad}</p>
+          <p>${material.precio}</p>
+          <button onClick={() => handleEditar(material)}>Editar</button>
+          <button onClick={() => handleEliminar(material.id)}>Eliminar</button>
+          <hr />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default MaterialesPage;
+</file>
+
+<file path="src/pages/Presupuestos/PresupuestosPage.jsx">
+import { useEffect, useState } from "react";
+import {
+  obtenerPresupuestos,
+  crearPresupuesto,
+} from "../../services/presupuestosService";
+import { obtenerClientes } from "../../services/clientesService";
+import { Link } from "react-router-dom";
+
+function PresupuestosPage() {
+  const [presupuestos, setPresupuestos] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+
+  const [titulo, setTitulo] = useState("");
+  const [categoriaTrabajo, setCategoriaTrabajo] = useState("");
+  const [clienteId, setClienteId] = useState("");
+
+  const [tipoTrabajo, setTipoTrabajo] = useState("Carpintería");
+
+  const [descripcion, setDescripcion] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [notasInternas, setNotasInternas] = useState("");
+
+  const [porcentajeGanancia, setPorcentajeGanancia] = useState(35);
+  const [consumiblesImprevistos, setConsumiblesImprevistos] = useState(0);
+  const [flete, setFlete] = useState(0);
+
+  const [validezDias, setValidezDias] = useState(15);
+
+  async function cargarPresupuestos() {
+    try {
+      const data = await obtenerPresupuestos();
+
+      setPresupuestos(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function generarNumeroPresupuesto() {
+    const siguiente = presupuestos.length + 1;
+
+    return `PV-${String(siguiente).padStart(4, "0")}`;
+  }
+
+  async function cargarClientes() {
+    try {
+      const data = await obtenerClientes();
+
+      setClientes(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await cargarPresupuestos();
+      await cargarClientes();
+    };
+
+    fetchData();
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    try {
+      await crearPresupuesto({
+        numero: generarNumeroPresupuesto(),
+
+        cliente_id: Number(clienteId),
+
+        titulo,
+        categoria_trabajo: categoriaTrabajo,
+
+        tipo_trabajo: tipoTrabajo,
+
+        descripcion,
+        observaciones,
+        notas_internas: notasInternas,
+
+        porcentaje_ganancia: porcentajeGanancia,
+
+        consumibles_imprevistos: consumiblesImprevistos,
+
+        flete,
+
+        validez_dias: validezDias,
+      });
+
+      await cargarPresupuestos();
+
+      setTitulo("");
+      setCategoriaTrabajo("");
+      setClienteId("");
+
+      setDescripcion("");
+      setObservaciones("");
+      setNotasInternas("");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const presupuestosFiltrados = presupuestos.filter((presupuesto) => {
+    const textoBusqueda = busqueda.toLowerCase();
+
+    return (
+      presupuesto.numero?.toLowerCase().includes(textoBusqueda) ||
+      presupuesto.titulo?.toLowerCase().includes(textoBusqueda) ||
+      presupuesto.categoria_trabajo?.toLowerCase().includes(textoBusqueda) ||
+      presupuesto.clientes?.nombre?.toLowerCase().includes(textoBusqueda)
+    );
+  });
+
+  return (
+    <div>
+      <h2>Presupuestos</h2>
+      <input
+        type="text"
+        placeholder="Buscar por número, cliente, título o categoría..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+
+      <hr />
+      <form onSubmit={handleSubmit}>
+        <h3>Nuevo Presupuesto</h3>
+
+        <input
+          type="text"
+          placeholder="Título"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          required
+        />
+
+        <select
+          value={categoriaTrabajo}
+          onChange={(e) => setCategoriaTrabajo(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar categoría</option>
+
+          <option>Amoblamiento de cocina</option>
+          <option>Placard</option>
+          <option>Vestidor</option>
+          <option>Biblioteca</option>
+          <option>Pérgola</option>
+          <option>Puerta</option>
+          <option>Portón</option>
+          <option>Escalera</option>
+          <option>Parrilla</option>
+          <option>Otro</option>
+        </select>
+
+        <select
+          value={clienteId}
+          onChange={(e) => setClienteId(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar cliente</option>
+
+          {clientes.map((cliente) => (
+            <option key={cliente.id} value={cliente.id}>
+              {cliente.nombre}
+            </option>
+          ))}
+        </select>
+
+        <button type="submit">Crear Presupuesto</button>
+      </form>
+
+      <hr />
+
+      {presupuestosFiltrados.map((presupuesto) => (
+        <div key={presupuesto.id}>
+          <strong>{presupuesto.numero}</strong>
+
+          <p>
+            <strong>Título:</strong> {presupuesto.titulo}
+          </p>
+
+          <p>
+            <strong>Categoría:</strong> {presupuesto.categoria_trabajo}
+          </p>
+
+          <p>
+            <strong>Cliente:</strong> {presupuesto.clientes?.nombre}
+          </p>
+
+          <p>
+            <strong>Tipo:</strong> {presupuesto.tipo_trabajo}
+          </p>
+
+          <p>
+            <strong>Estado:</strong> {presupuesto.estado}
+          </p>
+
+          <p>
+            <strong>Precio Final:</strong> $
+            {Number(presupuesto.precio_final || 0).toLocaleString("es-AR")}
+          </p>
+
+          <Link to={`/presupuestos/${presupuesto.id}`}>Ver</Link>
+
+          <hr />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default PresupuestosPage;
+</file>
+
+<file path="src/services/clientesService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerClientes() {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("*")
+    .order("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function crearCliente(cliente) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .insert([cliente])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function eliminarCliente(id) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarCliente(id, cliente) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .update(cliente)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="src/services/presupuestosService.js">
+import { supabase } from "../lib/supabase";
+
+export async function obtenerPresupuestos() {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .select(
+      `
+      *,
+      clientes(nombre)
+    `,
+    )
+    .order("id", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function crearPresupuesto(presupuesto) {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .insert([presupuesto])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function obtenerPresupuestoPorId(id) {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .select(
+      `
+      *,
+      clientes(nombre)
+    `,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarPresupuesto(id, presupuesto) {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .update(presupuesto)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+</file>
+
+<file path="src/App.jsx">
+import {
+  BrowserRouter,
+  Routes,
+  Route
+} from 'react-router-dom'
+
+import MainLayout from './layouts/MainLayout'
+
+import ClientesPage from './pages/Clientes/ClientesPage'
+import MaterialesPage from './pages/Materiales/MaterialesPage'
+import IntegrantesPage from './pages/Integrantes/IntegrantesPage'
+import PresupuestosPage from './pages/Presupuestos/PresupuestosPage'
+import PresupuestoDetallePage from "./pages/Presupuestos/PresupuestoDetallePage";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<ClientesPage />} />
+          <Route path="/materiales" element={<MaterialesPage />} />
+          <Route path="/integrantes" element={<IntegrantesPage />} />
+          <Route path="/presupuestos" element={<PresupuestosPage />} />
+          <Route
+            path="/presupuestos/:id"
+            element={<PresupuestoDetallePage />}
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App
+</file>
+
+<file path="src/pages/Clientes/ClientesPage.jsx">
+import { useEffect, useState } from "react";
+import {
+  obtenerClientes,
+  crearCliente,
+  eliminarCliente,
+  actualizarCliente,
+} from "../../services/clientesService";
+
+function ClientesPage() {
+  const [clientes, setClientes] = useState([]);
+
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [clienteEditando, setClienteEditando] = useState(null);
+  const [direccion, setDireccion] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+
+  async function cargarClientes() {
+    try {
+      const data = await obtenerClientes();
+      setClientes(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    const inicializar = async () => {
+      await cargarClientes();
+    };
+
+    inicializar();
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    try {
+      if (clienteEditando) {
+        await actualizarCliente(clienteEditando.id, {
+          nombre,
+          telefono,
+          email,
+          direccion,
+          observaciones,
+        });
+      } else {
+
+        await crearCliente({
+          nombre,
+          telefono,
+          email,
+          direccion,
+          observaciones,
+        });
+      }
+
+      setNombre("");
+      setTelefono("");
+      setEmail("");
+      setDireccion("");
+      setObservaciones("");
+      setClienteEditando(null);
+
+      await cargarClientes();
+    } catch (error) {
+      console.error("ERROR:", error);
+    }
+  }
+
+  async function handleEliminar(id) {
+    const confirmar = window.confirm("¿Desea eliminar este cliente?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarCliente(id);
+
+      await cargarClientes();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleEditar(cliente) {
+    alert(`Editar: ${cliente.nombre}`);
+
+    setClienteEditando(cliente);
+
+    setNombre(cliente.nombre || "");
+    setTelefono(cliente.telefono || "");
+    setEmail(cliente.email || "");
+    setDireccion(cliente.direccion || "");
+    setObservaciones(cliente.observaciones || "");
+  }
+
+  return (
+    <div>
+      <h2>Clientes</h2>
+
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            id="nombre"
+            name="nombre"
+            type="text"
+            placeholder="Nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            autoComplete="name"
+            required
+            minLength={3}
+            maxLength={100}
+          />
+        </div>
+
+        <div>
+          <input
+            id="telefono"
+            name="telefono"
+            type="tel"
+            placeholder="Teléfono"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            autoComplete="tel"
+            maxLength={20}
+          />
+        </div>
+
+        <div>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
+        </div>
+
+        <div>
+          <input
+            id="direccion"
+            name="direccion"
+            type="text"
+            placeholder="Dirección"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+
+        <div>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            placeholder="Observaciones"
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+            rows={4}
+          />
+        </div>
+
+        <button type="submit">
+          {clienteEditando ? "Guardar Cambios" : "Crear Cliente"}
+        </button>
+      </form>
+
+      <hr />
+
+      {clientes.map((cliente) => (
+        <div key={cliente.id}>
+          <strong>{cliente.nombre}</strong>
+
+          <p>{cliente.telefono}</p>
+
+          <p>{cliente.email}</p>
+
+          <p>{cliente.direccion}</p>
+
+          <p>{cliente.observaciones}</p>
+
+          <button onClick={() => handleEditar(cliente)}>Editar</button>
+
+          <button onClick={() => handleEliminar(cliente.id)}>Eliminar</button>
+
+          <hr />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default ClientesPage;
+</file>
+
+<file path="src/pages/Presupuestos/PresupuestoDetallePage.jsx">
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+import {
+  obtenerPresupuestoPorId,
+  actualizarPresupuesto,
+} from "../../services/presupuestosService";
+import { obtenerMateriales } from "../../services/materialesService";
+
+import {
+  obtenerMaterialesPresupuesto,
+  agregarMaterialPresupuesto,
+  eliminarMaterialPresupuesto,
+  actualizarMaterialPresupuesto,
+} from "../../services/presupuestoMaterialesService";
+
+import { obtenerIntegrantes } from "../../services/integrantesService";
+
+import {
+  obtenerManoObraPresupuesto,
+  agregarManoObraPresupuesto,
+  eliminarManoObraPresupuesto,
+} from "../../services/presupuestoManoObraService";
+
+import jsPDF from "jspdf";
+
+function PresupuestoDetallePage() {
+  const { id } = useParams();
+
+  // Estado para presupuesto
+  const [presupuesto, setPresupuesto] = useState(null);
+  const [observaciones, setObservaciones] = useState("");
+  const [notasInternas, setNotasInternas] = useState("");
+  const [opcionales, setOpcionales] = useState("");
+  const [precioOpcional, setPrecioOpcional] = useState(0);
+
+  // Estado para materiales
+  const [materiales, setMateriales] = useState([]);
+  const [materialesPresupuesto, setMaterialesPresupuesto] = useState([]);
+  const [materialId, setMaterialId] = useState("");
+  const [cantidad, setCantidad] = useState("");
+  const [materialEditando, setMaterialEditando] = useState(null);
+
+  // Estado para mano de obra
+  const [integrantes, setIntegrantes] = useState([]);
+  const [manoObraPresupuesto, setManoObraPresupuesto] = useState([]);
+  const [integranteId, setIntegranteId] = useState("");
+  const [dias, setDias] = useState("");
+  const [precioFinal, setPrecioFinal] = useState("");
+  const [consumiblesImprevistos, setConsumiblesImprevistos] = useState(0);
+  const [porcentajeGanancia, setPorcentajeGanancia] = useState(35);
+  const [descripcion, setDescripcion] = useState("");
+  const [flete, setFlete] = useState(0);
+
+  async function cargarMateriales() {
+    try {
+      const data = await obtenerMateriales();
+
+      setMateriales(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function cargarMaterialesPresupuesto() {
+    try {
+      const data = await obtenerMaterialesPresupuesto(id);
+
+      setMaterialesPresupuesto(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function cargarIntegrantes() {
+    try {
+      const data = await obtenerIntegrantes();
+
+      setIntegrantes(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function cargarManoObra() {
+    try {
+      const data = await obtenerManoObraPresupuesto(id);
+
+      setManoObraPresupuesto(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await cargarMateriales();
+      await cargarMaterialesPresupuesto();
+      await cargarIntegrantes();
+      await cargarManoObra();
+      try {
+        const data = await obtenerPresupuestoPorId(id);
+
+        setPresupuesto(data);
+        setPrecioFinal(data.precio_final || "");
+        setFlete(data.flete || 0);
+        setPorcentajeGanancia(data.porcentaje_ganancia || 35);
+        setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
+        setDescripcion(data.descripcion || "");
+        setObservaciones(data.observaciones || "");
+        setNotasInternas(data.notas_internas || "");
+        setOpcionales(data.opcionales || "");
+        setPrecioOpcional(data.precio_opcional || 0);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  async function handleAgregarMaterial(e) {
+    e.preventDefault();
+
+    try {
+      const materialSeleccionado = materiales.find(
+        (m) => m.id === Number(materialId),
+      );
+
+      if (!materialSeleccionado) {
+        throw new Error("Material no encontrado");
+      }
+
+      const subtotal = Number(cantidad) * Number(materialSeleccionado.precio);
+
+      if (materialEditando) {
+        await actualizarMaterialPresupuesto(materialEditando.id, {
+          material_id: materialSeleccionado.id,
+          material_nombre: materialSeleccionado.nombre,
+          cantidad: Number(cantidad),
+          unidad: materialSeleccionado.unidad,
+          precio_unitario: materialSeleccionado.precio,
+          subtotal,
+        });
+      } else {
+        await agregarMaterialPresupuesto({
+          presupuesto_id: Number(id),
+          material_id: materialSeleccionado.id,
+          material_nombre: materialSeleccionado.nombre,
+          cantidad: Number(cantidad),
+          unidad: materialSeleccionado.unidad,
+          precio_unitario: materialSeleccionado.precio,
+          subtotal,
+        });
+      }
+
+      setMaterialId("");
+      setCantidad("");
+      setMaterialEditando(null);
+      await cargarMaterialesPresupuesto();
+    } catch (error) {
+      console.error("Error al agregar/editar material:", error);
+    }
+  }
+
+  async function handleEliminarMaterial(id) {
+    const confirmar = window.confirm("¿Desea eliminar este material?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarMaterialPresupuesto(id);
+
+      await cargarMaterialesPresupuesto();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleEditarMaterial(material) {
+    setMaterialEditando(material);
+
+    setMaterialId(material.material_id);
+    setCantidad(material.cantidad);
+  }
+
+  const integrantesActivos = integrantes.filter((i) => i.activo);
+
+  async function handleAgregarManoObra(e) {
+    e.preventDefault();
+
+    try {
+      if (integranteId === "todos") {
+        try {
+          const integrantesFaltantes = integrantesActivos.filter(
+            (integrante) =>
+              !manoObraPresupuesto.some(
+                (item) => item.integrante_id === integrante.id,
+              ),
+          );
+
+          if (integrantesFaltantes.length === 0) {
+            alert("Todos los integrantes ya están agregados al presupuesto.");
+            return;
+          }
+
+          for (const integrante of integrantesFaltantes) {
+            const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+            await agregarManoObraPresupuesto({
+              presupuesto_id: Number(id),
+
+              integrante_id: integrante.id,
+
+              integrante_nombre: integrante.nombre,
+
+              dias: Number(dias),
+
+              jornal_utilizado: integrante.jornal_actual,
+
+              subtotal,
+            });
+          }
+
+          setIntegranteId("");
+          setDias("");
+
+          await cargarManoObra();
+          await actualizarCostosPresupuesto();
+
+          return;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      const integrante = integrantes.find((i) => i.id === Number(integranteId));
+
+      const yaExiste = manoObraPresupuesto.some(
+        (item) => item.integrante_id === Number(integranteId),
+      );
+
+      if (yaExiste) {
+        alert("Ese integrante ya está agregado al presupuesto.");
+        return;
+      }
+
+      if (!integrante) {
+        throw new Error("Integrante no encontrado");
+      }
+
+      const subtotal = Number(dias) * Number(integrante.jornal_actual);
+
+      await agregarManoObraPresupuesto({
+        presupuesto_id: Number(id),
+
+        integrante_id: integrante.id,
+
+        integrante_nombre: integrante.nombre,
+
+        dias: Number(dias),
+
+        jornal_utilizado: integrante.jornal_actual,
+
+        subtotal,
+      });
+
+      setIntegranteId("");
+      setDias("");
+
+      await cargarManoObra();
+      await actualizarCostosPresupuesto();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleEliminarManoObra(id) {
+    const confirmar = window.confirm("¿Desea eliminar esta mano de obra?");
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarManoObraPresupuesto(id);
+
+      await cargarManoObra();
+
+      await actualizarCostosPresupuesto();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const costoManoObra = manoObraPresupuesto.reduce(
+    (total, item) => total + Number(item.subtotal),
+    0,
+  );
+
+  const costoMateriales = materialesPresupuesto.reduce(
+    (total, material) => total + Number(material.subtotal),
+    0,
+  );
+
+  const costoTotal =
+    costoMateriales + costoManoObra + Number(consumiblesImprevistos || 0);
+
+  const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
+
+  // Valor del trabajo sin considerar flete
+  const precioTrabajo = costoTotal + montoGanancia;
+
+  const precioCalculado = precioTrabajo + Number(flete || 0);
+
+  const totalConOpcional =
+    Number(precioFinal || 0) + Number(precioOpcional || 0);
+
+  async function guardarResumenFinanciero() {
+    try {
+      await actualizarPresupuesto(id, {
+        precio_final: Number(precioFinal) || 0,
+
+        flete: Number(flete) || 0,
+
+        porcentaje_ganancia: Number(porcentajeGanancia) || 0,
+
+        monto_ganancia: Number(montoGanancia) || 0,
+
+        precio_trabajo: Number(precioTrabajo) || 0,
+
+        consumibles_imprevistos: Number(consumiblesImprevistos) || 0,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function actualizarCostosPresupuesto() {
+    try {
+      const materialesActualizados = await obtenerMaterialesPresupuesto(id);
+
+      const manoObraActualizada = await obtenerManoObraPresupuesto(id);
+
+      const costoMaterialesActualizado = materialesActualizados.reduce(
+        (total, material) => total + Number(material.subtotal),
+        0,
+      );
+
+      const costoManoObraActualizado = manoObraActualizada.reduce(
+        (total, item) => total + Number(item.subtotal),
+        0,
+      );
+
+      const costoTotalActualizado =
+        costoMaterialesActualizado + costoManoObraActualizado;
+
+      const montoGananciaActualizado =
+        costoTotalActualizado * (Number(porcentajeGanancia) / 100);
+
+      const precioTrabajoActualizado =
+        costoTotalActualizado + montoGananciaActualizado;
+
+      await actualizarPresupuesto(id, {
+        costo_materiales: costoMaterialesActualizado,
+
+        costo_mano_obra: costoManoObraActualizado,
+
+        costo_total: costoTotalActualizado,
+
+        monto_ganancia: montoGananciaActualizado,
+
+        precio_trabajo: precioTrabajoActualizado,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function redondear(valor, multiplo) {
+    return Math.ceil(valor / multiplo) * multiplo;
+  }
+
+  async function guardarDescripcion() {
+    try {
+      await actualizarPresupuesto(id, {
+        descripcion,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function guardarObservaciones() {
+    try {
+      await actualizarPresupuesto(id, {
+        observaciones,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function guardarNotasInternas() {
+    try {
+      await actualizarPresupuesto(id, {
+        notas_internas: notasInternas,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function aplicarPrecioFinal(nuevoPrecio) {
+    try {
+      setPrecioFinal(nuevoPrecio);
+
+      await actualizarPresupuesto(id, {
+        precio_final: nuevoPrecio,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function guardarOpcionales() {
+    try {
+      await actualizarPresupuesto(id, {
+        opcionales,
+        precio_opcional: Number(precioOpcional) || 0,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Función auxiliar: convierte una imagen cargada por fetch a base64
+  async function obtenerLogoBase64() {
+    const response = await fetch("/logo-valverde.png");
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("image")) {
+      throw new Error(
+        `La ruta /logo-valverde.png no devolvió una imagen (devolvió: ${contentType}). Verificá que el archivo esté en /public/logo-valverde.png y reiniciá el servidor de desarrollo.`,
+      );
+    }
+
+    const blob = await response.blob();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Función auxiliar para dibujar un recuadro con título centrado y texto adentro
+  function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.text(titulo, x + ancho / 2, y + 6, { align: "center" });
+    doc.setFont(undefined, "normal");
+
+    doc.line(x, y + 9, x + ancho, y + 9);
+
+    doc.setFontSize(fontSizeTexto);
+
+    const lineas = doc.splitTextToSize(texto || "", ancho - 8);
+
+    doc.text(lineas, x + 4, y + 15, { lineHeightFactor: 1.15 });
+
+    const altoTexto = lineas.length * (fontSizeTexto / 2.2) + 19;
+
+    doc.rect(x, y, ancho, altoTexto);
+
+    return y + altoTexto;
+  }
+
+  // Función para generar el PDF del presupuesto
+  async function generarPDF() {
+    const doc = new jsPDF();
+
+    const anchoHoja = 210;
+    const margen = 15;
+    const anchoUtil = anchoHoja - margen * 2;
+
+    let y = margen;
+
+    // ENCABEZADO (logo + "Presupuesto" ya incluido en la imagen)
+
+    const altoLogo = (399 / 1774) * anchoUtil * 0.85; // ≈ 18mm con anchoUtil de 180mm
+
+    try {
+      const logoBase64 = await obtenerLogoBase64();
+      doc.addImage(logoBase64, "PNG", margen, y, anchoUtil, altoLogo);
+    } catch (error) {
+      console.error("No se pudo cargar el logo:", error);
+    }
+
+    y += altoLogo;
+    doc.rect(margen, margen, anchoUtil, altoLogo);
+
+    y += 4;
+
+    // RECUADRO CLIENTE / CONTACTO / FECHA / VALIDEZ (unificado, sin espacio entre filas)
+
+    const anchoMitad = anchoUtil / 2;
+    const altoFila = 6;
+    const altoTotalDatos = altoFila * 4;
+
+    doc.rect(margen, y, anchoUtil, altoTotalDatos);
+    doc.line(margen + anchoMitad, y, margen + anchoMitad, y + altoTotalDatos);
+    doc.line(margen, y + altoFila, margen + anchoUtil, y + altoFila);
+    doc.line(margen, y + altoFila * 2, margen + anchoUtil, y + altoFila * 2);
+    doc.line(margen, y + altoFila * 3, margen + anchoUtil, y + altoFila * 3);
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.text("CLIENTE", margen + 3, y + 4);
+    doc.text("CONTACTO", margen + anchoMitad + 3, y + 4);
+
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(9);
+    doc.text(presupuesto.clientes?.nombre || "", margen + 3, y + altoFila + 4);
+    doc.text(
+      presupuesto.clientes?.telefono || "-",
+      margen + anchoMitad + 3,
+      y + altoFila + 4,
+    );
+
+    const fechaActual = new Date();
+    const fechaValidez = new Date(fechaActual);
+    fechaValidez.setDate(fechaValidez.getDate() + 15);
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.text("FECHA", margen + 3, y + altoFila * 2 + 4);
+    doc.text("VALIDEZ", margen + anchoMitad + 3, y + altoFila * 2 + 4);
+
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(9);
+    doc.text(
+      fechaActual.toLocaleDateString("es-AR"),
+      margen + 3,
+      y + altoFila * 3 + 4,
+    );
+    doc.text(
+      fechaValidez.toLocaleDateString("es-AR"),
+      margen + anchoMitad + 3,
+      y + altoFila * 3 + 4,
+    );
+
+    y += altoTotalDatos + 4;
+
+    // TÍTULO DEL TRABAJO
+
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text((presupuesto.titulo || "").toUpperCase(), anchoHoja / 2, y + 7, {
+      align: "center",
+    });
+    doc.setFont(undefined, "normal");
+    doc.rect(margen, y, anchoUtil, 11);
+
+    y += 11 + 4;
+
+    // DETALLE DE CONSTRUCCIÓN
+
+    y = dibujarCaja(
+      doc,
+      margen,
+      y,
+      anchoUtil,
+      "DETALLE DE CONSTRUCCIÓN",
+      descripcion,
+    );
+
+    y += 4;
+
+    // OBSERVACIONES
+
+    /*if (observaciones?.trim()) {
+    y = dibujarCaja(
+      doc,
+      margen,
+      y,
+      anchoUtil,
+      "OBSERVACIONES",
+      observaciones,
+    );
+    y += 4;
+  }*/
+
+    // OPCIONALES (solo el texto descriptivo, sin los montos)
+
+    if (opcionales?.trim()) {
+      y = dibujarCaja(doc, margen, y, anchoUtil, "OPCIONALES", opcionales);
+      y += 2;
+    }
+
+    // TOTAL PRESUPUESTADO (incluye Valor Opcional y Total con Opcional si corresponde)
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.text("TOTAL PRESUPUESTADO", anchoHoja / 2, y + 6, { align: "center" });
+    doc.setFont(undefined, "normal");
+    doc.line(margen, y + 9, margen + anchoUtil, y + 9);
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+      `$${Number(precioFinal || 0).toLocaleString("es-AR")}`,
+      anchoHoja / 2,
+      y + 18,
+      {
+        align: "center",
+      },
+    );
+
+    doc.setFont(undefined, "normal");
+
+    let altoCajaTotal = 24;
+
+    if (opcionales?.trim()) {
+      doc.line(margen + 20, y + 24, margen + anchoUtil - 20, y + 24);
+
+      doc.setFontSize(9);
+
+      doc.text(
+        `Valor Opcional: $${Number(precioOpcional || 0).toLocaleString(
+          "es-AR",
+        )}`,
+        anchoHoja / 2,
+        y + 31,
+        {
+          align: "center",
+        },
+      );
+
+      doc.setFont(undefined, "bold");
+
+      doc.text(`TOTAL CON OPCIONAL`, anchoHoja / 2, y + 38, {
+        align: "center",
+      });
+
+      doc.setFontSize(12);
+
+      doc.text(
+        `$${Number(totalConOpcional || 0).toLocaleString("es-AR")}`,
+        anchoHoja / 2,
+        y + 45,
+        {
+          align: "center",
+        },
+      );
+
+      doc.setFont(undefined, "normal");
+
+      altoCajaTotal = 50;
+    }
+
+    doc.rect(margen, y, anchoUtil, altoCajaTotal);
+
+    y += altoCajaTotal + 4;
+
+    // PIE DE PÁGINA (una sola línea)
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.text("CARPINTERÍA Y HERRERÍA VALVERDE", margen + 4, y + 7);
+    doc.setFont(undefined, "normal");
+    doc.text(
+      "WhatsApp: +54 9 11 3638-5790   |   www.carpinteriavalverde.com.ar/",
+      anchoUtil + margen - 4,
+      y + 7,
+      { align: "right" },
+    );
+
+    doc.rect(margen, y, anchoUtil, 11);
+
+    y += 11;
+
+    console.log("y final:", y, "alto hoja A4:", 297);
+
+    doc.save(`${presupuesto.numero}.pdf`);
+  }
+
+  if (!presupuesto) {
+    return <p>Cargando...</p>;
+  }
+
+  return (
+    <div>
+      <h2>{presupuesto.numero}</h2>
+
+      <p>
+        <strong>Título:</strong> {presupuesto.titulo}
+      </p>
+
+      <p>
+        <strong>Categoría:</strong> {presupuesto.categoria_trabajo}
+      </p>
+
+      <p>
+        <strong>Cliente:</strong> {presupuesto.clientes?.nombre}
+      </p>
+
+      <p>
+        <strong>Tipo:</strong> {presupuesto.tipo_trabajo}
+      </p>
+
+      <p>
+        <strong>Estado:</strong> {presupuesto.estado}
+      </p>
+
+      <hr />
+
+      <div>
+        <label>Detalles de Construcción</label>
+
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          onBlur={guardarDescripcion}
+          rows={5}
+          placeholder="Describa el trabajo a realizar..."
+        />
+      </div>
+
+      <div>
+        <label>Observaciones</label>
+
+        <textarea
+          value={observaciones}
+          onChange={(e) => setObservaciones(e.target.value)}
+          onBlur={guardarObservaciones}
+          rows={4}
+        />
+      </div>
+
+      <h3>Opcionales</h3>
+
+      <textarea
+        value={opcionales}
+        onChange={(e) => setOpcionales(e.target.value)}
+        onBlur={guardarOpcionales}
+        rows={4}
+      />
+
+      <div>
+        <label>Valor Opcional</label>
+
+        <input
+          type="number"
+          value={precioOpcional}
+          onChange={(e) => setPrecioOpcional(e.target.value)}
+          onBlur={guardarOpcionales}
+        />
+      </div>
+
+      <div>
+        <label>Notas Internas</label>
+        <small>No se imprime en el PDF</small>
+
+        <textarea
+          value={notasInternas}
+          onChange={(e) => setNotasInternas(e.target.value)}
+          onBlur={guardarNotasInternas}
+          rows={4}
+        />
+      </div>
+
+      <h3>Materiales</h3>
+      <form onSubmit={handleAgregarMaterial}>
+        <select
+          value={materialId}
+          onChange={(e) => setMaterialId(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar material</option>
+
+          {materiales.map((material) => (
+            <option key={material.id} value={material.id}>
+              {material.nombre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Cantidad"
+          value={cantidad}
+          onChange={(e) => setCantidad(e.target.value)}
+          required
+        />
+
+        <button type="submit">
+          {materialEditando ? "Guardar Cambios" : "Agregar Material"}
+        </button>
+      </form>
+      {materialesPresupuesto.map((material) => (
+        <div key={material.id}>
+          <p>
+            <strong>{material.material_nombre}</strong>
+          </p>
+
+          <p>
+            {material.cantidad} {material.unidad}
+          </p>
+
+          <p>${Number(material.subtotal).toLocaleString("es-AR")}</p>
+
+          <button onClick={() => handleEditarMaterial(material)}>Editar</button>
+
+          <button onClick={() => handleEliminarMaterial(material.id)}>
+            Eliminar
+          </button>
+
+          <hr />
+        </div>
+      ))}
+
+      <h4>Costo Materiales: ${costoMateriales.toLocaleString("es-AR")}</h4>
+
+      <hr />
+
+      <h3>Mano de Obra</h3>
+
+      <form onSubmit={handleAgregarManoObra}>
+        <select
+          value={integranteId}
+          onChange={(e) => setIntegranteId(e.target.value)}
+          required
+        >
+          <option value="">Seleccionar integrante</option>
+          <option value="todos">Todos</option>
+
+          {integrantes.map((integrante) => (
+            <option key={integrante.id} value={integrante.id}>
+              {integrante.nombre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          step="0.5"
+          placeholder="Días"
+          value={dias}
+          onChange={(e) => setDias(e.target.value)}
+          required
+        />
+
+        <button type="submit">Agregar Mano de Obra</button>
+      </form>
+
+      {manoObraPresupuesto.map((item) => (
+        <div key={item.id}>
+          <p>
+            <strong>{item.integrante_nombre}</strong>
+          </p>
+
+          <p>{item.dias} días</p>
+
+          <p>${Number(item.subtotal).toLocaleString("es-AR")}</p>
+
+          <button onClick={() => handleEliminarManoObra(item.id)}>
+            Eliminar
+          </button>
+
+          <hr />
+        </div>
+      ))}
+
+      <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
+      <hr />
+
+      <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
+
+      <hr />
+
+      <h2>Resumen Financiero</h2>
+      <div>
+        <label>Consumibles e Imprevistos</label>
+
+        <input
+          type="number"
+          value={consumiblesImprevistos}
+          onChange={(e) => setConsumiblesImprevistos(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Costo Materiales:</strong> $
+        {costoMateriales.toLocaleString("es-AR")}
+      </p>
+
+      <p>
+        <strong>Costo Mano de Obra:</strong> $
+        {costoManoObra.toLocaleString("es-AR")}
+      </p>
+
+      <p>
+        <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
+      </p>
+
+      <div>
+        <label>Ganancia %</label>
+
+        <input
+          type="number"
+          value={porcentajeGanancia}
+          onChange={(e) => setPorcentajeGanancia(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Monto Ganancia:</strong> $
+        {montoGanancia.toLocaleString("es-AR")}
+      </p>
+
+      <div>
+        <label>Flete</label>
+
+        <input
+          type="number"
+          value={flete}
+          onChange={(e) => setFlete(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Precio Calculado:</strong> $
+        {precioCalculado.toLocaleString("es-AR")}
+      </p>
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 10000))}
+      >
+        Redondear a 10.000
+      </button>
+
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 50000))}
+      >
+        Redondear a 50.000
+      </button>
+
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 100000))}
+      >
+        Redondear a 100.000
+      </button>
+
+      <button
+        type="button"
+        onClick={() => aplicarPrecioFinal(Math.round(precioCalculado))}
+      >
+        Copiar a Precio Final
+      </button>
+
+      <div>
+        <label>
+          <strong>Precio Final</strong>
+        </label>
+
+        <input
+          type="number"
+          value={precioFinal}
+          onChange={(e) => setPrecioFinal(e.target.value)}
+          onBlur={guardarResumenFinanciero}
+        />
+      </div>
+
+      <p>
+        <strong>Total con Opcional:</strong> $
+        {totalConOpcional.toLocaleString("es-AR")}
+      </p>
+
+      <button onClick={generarPDF}>Generar PDF</button>
+
+      {materialesPresupuesto.length === 0 && (
+        <p>Todavía no hay materiales cargados.</p>
+      )}
+    </div>
+  );
+}
+
+export default PresupuestoDetallePage;
+</file>
+
+</files>

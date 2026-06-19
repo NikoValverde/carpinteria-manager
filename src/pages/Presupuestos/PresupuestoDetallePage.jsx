@@ -5,7 +5,6 @@ import {
   obtenerPresupuestoPorId,
   actualizarPresupuesto,
 } from "../../services/presupuestosService";
-import { obtenerMateriales } from "../../services/materialesService";
 
 import {
   obtenerMaterialesPresupuesto,
@@ -35,9 +34,10 @@ function PresupuestoDetallePage() {
   const [precioOpcional, setPrecioOpcional] = useState(0);
 
   // Estado para materiales
-  const [materiales, setMateriales] = useState([]);
   const [materialesPresupuesto, setMaterialesPresupuesto] = useState([]);
-  const [materialId, setMaterialId] = useState("");
+  const [materialNombre, setMaterialNombre] = useState("");
+  const [unidad, setUnidad] = useState("");
+  const [precioUnitario, setPrecioUnitario] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [materialEditando, setMaterialEditando] = useState(null);
 
@@ -52,15 +52,7 @@ function PresupuestoDetallePage() {
   const [descripcion, setDescripcion] = useState("");
   const [flete, setFlete] = useState(0);
 
-  async function cargarMateriales() {
-    try {
-      const data = await obtenerMateriales();
 
-      setMateriales(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   async function cargarMaterialesPresupuesto() {
     try {
@@ -94,7 +86,6 @@ function PresupuestoDetallePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await cargarMateriales();
       await cargarMaterialesPresupuesto();
       await cargarIntegrantes();
       await cargarManoObra();
@@ -123,41 +114,49 @@ function PresupuestoDetallePage() {
     e.preventDefault();
 
     try {
-      const materialSeleccionado = materiales.find(
-        (m) => m.id === Number(materialId),
-      );
-
-      if (!materialSeleccionado) {
-        throw new Error("Material no encontrado");
-      }
-
-      const subtotal = Number(cantidad) * Number(materialSeleccionado.precio);
+      const subtotal = Number(cantidad) * Number(precioUnitario);
 
       if (materialEditando) {
         await actualizarMaterialPresupuesto(materialEditando.id, {
-          material_id: materialSeleccionado.id,
-          material_nombre: materialSeleccionado.nombre,
+          material_id: null,
+
+          material_nombre: materialNombre,
+
           cantidad: Number(cantidad),
-          unidad: materialSeleccionado.unidad,
-          precio_unitario: materialSeleccionado.precio,
+
+          unidad,
+
+          precio_unitario: Number(precioUnitario),
+
           subtotal,
         });
       } else {
         await agregarMaterialPresupuesto({
           presupuesto_id: Number(id),
-          material_id: materialSeleccionado.id,
-          material_nombre: materialSeleccionado.nombre,
+
+          material_id: null,
+
+          material_nombre: materialNombre,
+
           cantidad: Number(cantidad),
-          unidad: materialSeleccionado.unidad,
-          precio_unitario: materialSeleccionado.precio,
+
+          unidad,
+
+          precio_unitario: Number(precioUnitario),
+
           subtotal,
         });
       }
 
-      setMaterialId("");
+      setMaterialNombre("");
+      setUnidad("");
       setCantidad("");
+      setPrecioUnitario("");
+
       setMaterialEditando(null);
+
       await cargarMaterialesPresupuesto();
+      await actualizarCostosPresupuesto();
     } catch (error) {
       console.error("Error al agregar/editar material:", error);
     }
@@ -172,6 +171,7 @@ function PresupuestoDetallePage() {
       await eliminarMaterialPresupuesto(id);
 
       await cargarMaterialesPresupuesto();
+      await actualizarCostosPresupuesto();
     } catch (error) {
       console.error(error);
     }
@@ -180,8 +180,10 @@ function PresupuestoDetallePage() {
   function handleEditarMaterial(material) {
     setMaterialEditando(material);
 
-    setMaterialId(material.material_id);
-    setCantidad(material.cantidad);
+    setMaterialNombre(material.material_nombre || "");
+    setUnidad(material.unidad || "");
+    setCantidad(material.cantidad || "");
+    setPrecioUnitario(material.precio_unitario || "");
   }
 
   const integrantesActivos = integrantes.filter((i) => i.activo);
@@ -314,6 +316,11 @@ function PresupuestoDetallePage() {
   const totalConOpcional =
     Number(precioFinal || 0) + Number(precioOpcional || 0);
 
+  const diferenciaPrecio =
+    Number(precioFinal || 0) - Number(precioCalculado || 0);
+
+  const precioDesactualizado = diferenciaPrecio !== 0;
+
   async function guardarResumenFinanciero() {
     try {
       await actualizarPresupuesto(id, {
@@ -351,7 +358,9 @@ function PresupuestoDetallePage() {
       );
 
       const costoTotalActualizado =
-        costoMaterialesActualizado + costoManoObraActualizado;
+        costoMaterialesActualizado +
+        costoManoObraActualizado +
+        Number(consumiblesImprevistos || 0);
 
       const montoGananciaActualizado =
         costoTotalActualizado * (Number(porcentajeGanancia) / 100);
@@ -772,18 +781,28 @@ function PresupuestoDetallePage() {
 
       <h3>Materiales</h3>
       <form onSubmit={handleAgregarMaterial}>
+        <input
+          type="text"
+          placeholder="Nombre del material"
+          value={materialNombre}
+          onChange={(e) => setMaterialNombre(e.target.value)}
+          required
+        />
+
         <select
-          value={materialId}
-          onChange={(e) => setMaterialId(e.target.value)}
+          value={unidad}
+          onChange={(e) => setUnidad(e.target.value)}
           required
         >
-          <option value="">Seleccionar material</option>
+          <option value="">Unidad</option>
 
-          {materiales.map((material) => (
-            <option key={material.id} value={material.id}>
-              {material.nombre}
-            </option>
-          ))}
+          <option value="Placa">Placa</option>
+          <option value="Unidad">Unidad</option>
+          <option value="Barra 6m">Barra 6m</option>
+          <option value="Metro">Metro</option>
+          <option value="m²">m²</option>
+          <option value="Litro">Litro</option>
+          <option value="Kg">Kg</option>
         </select>
 
         <input
@@ -792,6 +811,15 @@ function PresupuestoDetallePage() {
           placeholder="Cantidad"
           value={cantidad}
           onChange={(e) => setCantidad(e.target.value)}
+          required
+        />
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Precio Unitario"
+          value={precioUnitario}
+          onChange={(e) => setPrecioUnitario(e.target.value)}
           required
         />
 
@@ -809,7 +837,12 @@ function PresupuestoDetallePage() {
             {material.cantidad} {material.unidad}
           </p>
 
-          <p>${Number(material.subtotal).toLocaleString("es-AR")}</p>
+          <p>
+            Precio Unitario: $
+            {Number(material.precio_unitario).toLocaleString("es-AR")}
+          </p>
+
+          <p>Subtotal: ${Number(material.subtotal).toLocaleString("es-AR")}</p>
 
           <button onClick={() => handleEditarMaterial(material)}>Editar</button>
 
@@ -874,9 +907,6 @@ function PresupuestoDetallePage() {
       ))}
 
       <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
-      <hr />
-
-      <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
 
       <hr />
 
@@ -903,7 +933,7 @@ function PresupuestoDetallePage() {
       </p>
 
       <p>
-        <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
+        <strong>Subtotal Costos:</strong> ${costoTotal.toLocaleString("es-AR")}
       </p>
 
       <div>
@@ -934,7 +964,7 @@ function PresupuestoDetallePage() {
       </div>
 
       <p>
-        <strong>Precio Calculado:</strong> $
+        <strong>Precio Trabajo:</strong> $
         {precioCalculado.toLocaleString("es-AR")}
       </p>
       <button
@@ -977,6 +1007,17 @@ function PresupuestoDetallePage() {
           onBlur={guardarResumenFinanciero}
         />
       </div>
+
+      {precioDesactualizado && (
+        <div>
+          <p>⚠ El Precio Final fue modificado o quedó desactualizado.</p>
+
+          <p>
+            Diferencia: {diferenciaPrecio > 0 ? "+" : "-"}$
+            {Math.abs(diferenciaPrecio).toLocaleString("es-AR")}
+          </p>
+        </div>
+      )}
 
       <p>
         <strong>Total con Opcional:</strong> $
