@@ -57,8 +57,6 @@ function PresupuestoDetallePage() {
   const [descripcion, setDescripcion] = useState("");
   const [flete, setFlete] = useState(0);
 
-
-
   async function cargarMaterialesPresupuesto() {
     try {
       const data = await obtenerMaterialesPresupuesto(id);
@@ -562,8 +560,6 @@ function PresupuestoDetallePage() {
       >
         Generar PDF
       </button>
-
-
     </div>
   );
 }
