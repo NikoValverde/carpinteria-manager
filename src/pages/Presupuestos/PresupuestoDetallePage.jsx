@@ -24,6 +24,7 @@ import {
 import jsPDF from "jspdf";
 
 import ResumenFinanciero from "../../components/Presupuestos/ResumenFinanciero";
+import MaterialesPresupuesto from "../../components/Presupuestos/MaterialesPresupuesto";
 
 function PresupuestoDetallePage() {
   const { id } = useParams();
@@ -366,7 +367,7 @@ function PresupuestoDetallePage() {
         costoTotalActualizado * (Number(porcentajeGanancia) / 100);
 
       const precioTrabajoActualizado =
-        costoTotalActualizado + montoGananciaActualizado;
+        costoTotalActualizado + montoGananciaActualizado + Number(flete || 0);
 
       await actualizarPresupuesto(id, {
         costo_materiales: costoMaterialesActualizado,
@@ -379,6 +380,15 @@ function PresupuestoDetallePage() {
 
         precio_trabajo: precioTrabajoActualizado,
       });
+      // actualiza el estado en React
+      setPresupuesto((prev) => ({
+        ...prev,
+        costo_materiales: costoMaterialesActualizado,
+        costo_mano_obra: costoManoObraActualizado,
+        costo_total: costoTotalActualizado,
+        monto_ganancia: montoGananciaActualizado,
+        precio_trabajo: precioTrabajoActualizado,
+      }));
     } catch (error) {
       console.error(error);
     }
@@ -775,84 +785,23 @@ function PresupuestoDetallePage() {
         />
       </div>
 
-      <h3>Materiales</h3>
-      <form onSubmit={handleAgregarMaterial}>
-        <input
-          type="text"
-          placeholder="Nombre del material"
-          value={materialNombre}
-          onChange={(e) => setMaterialNombre(e.target.value)}
-          required
-        />
-
-        <select
-          value={unidad}
-          onChange={(e) => setUnidad(e.target.value)}
-          required
-        >
-          <option value="">Unidad</option>
-
-          <option value="Placa">Placa</option>
-          <option value="Unidad">Unidad</option>
-          <option value="Barra 6m">Barra 6m</option>
-          <option value="Metro">Metro</option>
-          <option value="m²">m²</option>
-          <option value="Litro">Litro</option>
-          <option value="Kg">Kg</option>
-        </select>
-
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Cantidad"
-          value={cantidad}
-          onChange={(e) => setCantidad(e.target.value)}
-          required
-        />
-
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Precio Unitario"
-          value={precioUnitario}
-          onChange={(e) => setPrecioUnitario(e.target.value)}
-          required
-        />
-
-        <button type="submit">
-          {materialEditando ? "Guardar Cambios" : "Agregar Material"}
-        </button>
-      </form>
-      {materialesPresupuesto.map((material) => (
-        <div key={material.id}>
-          <p>
-            <strong>{material.material_nombre}</strong>
-          </p>
-
-          <p>
-            {material.cantidad} {material.unidad}
-          </p>
-
-          <p>
-            Precio Unitario: $
-            {Number(material.precio_unitario).toLocaleString("es-AR")}
-          </p>
-
-          <p>Subtotal: ${Number(material.subtotal).toLocaleString("es-AR")}</p>
-
-          <button onClick={() => handleEditarMaterial(material)}>Editar</button>
-
-          <button onClick={() => handleEliminarMaterial(material.id)}>
-            Eliminar
-          </button>
-
-          <hr />
-        </div>
-      ))}
-
-      <h4>Costo Materiales: ${costoMateriales.toLocaleString("es-AR")}</h4>
-
-      <hr />
+      <MaterialesPresupuesto
+        materialNombre={materialNombre}
+        setMaterialNombre={setMaterialNombre}
+        unidad={unidad}
+        setUnidad={setUnidad}
+        cantidad={cantidad}
+        setCantidad={setCantidad}
+        precioUnitario={precioUnitario}
+        setPrecioUnitario={setPrecioUnitario}
+        materialEditando={materialEditando}
+        setMaterialEditando={setMaterialEditando}
+        materialesPresupuesto={materialesPresupuesto}
+        costoMateriales={costoMateriales}
+        handleAgregarMaterial={handleAgregarMaterial}
+        handleEditarMaterial={handleEditarMaterial}
+        handleEliminarMaterial={handleEliminarMaterial}
+      />
 
       <h3>Mano de Obra</h3>
 
@@ -929,9 +878,7 @@ function PresupuestoDetallePage() {
 
       <button onClick={generarPDF}>Generar PDF</button>
 
-      {materialesPresupuesto.length === 0 && (
-        <p>Todavía no hay materiales cargados.</p>
-      )}
+
     </div>
   );
 }
