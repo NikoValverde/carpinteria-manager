@@ -42,12 +42,14 @@ The content is organized as follows:
 <directory_structure>
 .gitignore
 .repomixignore
+DB_SCHEMA.md
 eslint.config.js
 index.html
 package.json
 README.md
 src/App.css
 src/App.jsx
+src/components/Presupuestos/ResumenFinanciero.jsx
 src/index.css
 src/layouts/MainLayout.jsx
 src/lib/supabase.js
@@ -68,6 +70,40 @@ vite.config.js
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/components/Presupuestos/ResumenFinanciero.jsx">
+
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Repomix
+repomix-output.xml
+</file>
 
 <file path=".repomixignore">
 # Dependencias
@@ -131,31 +167,73 @@ Thumbs.db
 *.gif
 </file>
 
-<file path=".gitignore">
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+<file path="DB_SCHEMA.md">
+| table_name             | column_name             | data_type                |
+| ---------------------- | ----------------------- | ------------------------ |
+| presupuesto_mano_obra  | created_at              | timestamp with time zone |
+| presupuestos           | monto_ganancia          | numeric                  |
+| presupuestos           | precio_trabajo          | numeric                  |
+| presupuestos           | precio_final            | numeric                  |
+| presupuestos           | version                 | integer                  |
+| presupuestos           | presupuesto_origen_id   | bigint                   |
+| presupuestos           | created_at              | timestamp with time zone |
+| presupuestos           | precio_opcional         | numeric                  |
+| presupuesto_materiales | id                      | bigint                   |
+| presupuesto_materiales | presupuesto_id          | bigint                   |
+| presupuesto_materiales | material_id             | bigint                   |
+| presupuesto_materiales | cantidad                | numeric                  |
+| presupuesto_materiales | precio_unitario         | numeric                  |
+| presupuesto_materiales | subtotal                | numeric                  |
+| presupuesto_materiales | created_at              | timestamp with time zone |
+| presupuesto_mano_obra  | id                      | bigint                   |
+| presupuesto_mano_obra  | presupuesto_id          | bigint                   |
+| presupuesto_mano_obra  | integrante_id           | bigint                   |
+| presupuesto_mano_obra  | dias                    | numeric                  |
+| presupuesto_mano_obra  | jornal_utilizado        | numeric                  |
+| presupuesto_mano_obra  | subtotal                | numeric                  |
+| clientes               | id                      | bigint                   |
+| clientes               | created_at              | timestamp with time zone |
+| materiales             | id                      | bigint                   |
+| materiales             | precio                  | numeric                  |
+| materiales             | fecha_actualizacion     | timestamp with time zone |
+| materiales             | created_at              | timestamp with time zone |
+| integrantes            | id                      | bigint                   |
+| integrantes            | porcentaje              | numeric                  |
+| integrantes            | activo                  | boolean                  |
+| integrantes            | created_at              | timestamp with time zone |
+| integrantes            | jornal_actual           | numeric                  |
+| presupuestos           | id                      | bigint                   |
+| presupuestos           | cliente_id              | bigint                   |
+| presupuestos           | fecha                   | date                     |
+| presupuestos           | validez_dias            | integer                  |
+| presupuestos           | fecha_vencimiento       | date                     |
+| presupuestos           | porcentaje_ganancia     | numeric                  |
+| presupuestos           | consumibles_imprevistos | numeric                  |
+| presupuestos           | flete                   | numeric                  |
+| presupuestos           | costo_materiales        | numeric                  |
+| presupuestos           | costo_mano_obra         | numeric                  |
+| presupuestos           | costo_total             | numeric                  |
+| clientes               | nombre                  | text                     |
+| clientes               | telefono                | text                     |
+| clientes               | email                   | text                     |
+| clientes               | direccion               | text                     |
+| clientes               | observaciones           | text                     |
+| presupuesto_materiales | material_nombre         | text                     |
+| presupuesto_mano_obra  | integrante_nombre       | text                     |
+| materiales             | nombre                  | text                     |
+| materiales             | categoria               | text                     |
+| materiales             | unidad                  | text                     |
+| presupuestos           | notas_internas          | text                     |
+| presupuestos           | titulo                  | text                     |
+| presupuestos           | tipo_trabajo            | text                     |
+| presupuestos           | estado                  | text                     |
+| integrantes            | nombre                  | text                     |
+| presupuestos           | descripcion             | text                     |
+| presupuestos           | observaciones           | text                     |
+| presupuestos           | categoria_trabajo       | text                     |
+| presupuestos           | opcionales              | text                     |
+| presupuesto_materiales | unidad                  | text                     |
+| presupuestos           | numero                  | text                     |
 </file>
 
 <file path="eslint.config.js">
@@ -1772,7 +1850,6 @@ import {
   obtenerPresupuestoPorId,
   actualizarPresupuesto,
 } from "../../services/presupuestosService";
-import { obtenerMateriales } from "../../services/materialesService";
 
 import {
   obtenerMaterialesPresupuesto,
@@ -1802,9 +1879,10 @@ function PresupuestoDetallePage() {
   const [precioOpcional, setPrecioOpcional] = useState(0);
 
   // Estado para materiales
-  const [materiales, setMateriales] = useState([]);
   const [materialesPresupuesto, setMaterialesPresupuesto] = useState([]);
-  const [materialId, setMaterialId] = useState("");
+  const [materialNombre, setMaterialNombre] = useState("");
+  const [unidad, setUnidad] = useState("");
+  const [precioUnitario, setPrecioUnitario] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [materialEditando, setMaterialEditando] = useState(null);
 
@@ -1819,15 +1897,7 @@ function PresupuestoDetallePage() {
   const [descripcion, setDescripcion] = useState("");
   const [flete, setFlete] = useState(0);
 
-  async function cargarMateriales() {
-    try {
-      const data = await obtenerMateriales();
 
-      setMateriales(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   async function cargarMaterialesPresupuesto() {
     try {
@@ -1861,7 +1931,6 @@ function PresupuestoDetallePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await cargarMateriales();
       await cargarMaterialesPresupuesto();
       await cargarIntegrantes();
       await cargarManoObra();
@@ -1890,41 +1959,49 @@ function PresupuestoDetallePage() {
     e.preventDefault();
 
     try {
-      const materialSeleccionado = materiales.find(
-        (m) => m.id === Number(materialId),
-      );
-
-      if (!materialSeleccionado) {
-        throw new Error("Material no encontrado");
-      }
-
-      const subtotal = Number(cantidad) * Number(materialSeleccionado.precio);
+      const subtotal = Number(cantidad) * Number(precioUnitario);
 
       if (materialEditando) {
         await actualizarMaterialPresupuesto(materialEditando.id, {
-          material_id: materialSeleccionado.id,
-          material_nombre: materialSeleccionado.nombre,
+          material_id: null,
+
+          material_nombre: materialNombre,
+
           cantidad: Number(cantidad),
-          unidad: materialSeleccionado.unidad,
-          precio_unitario: materialSeleccionado.precio,
+
+          unidad,
+
+          precio_unitario: Number(precioUnitario),
+
           subtotal,
         });
       } else {
         await agregarMaterialPresupuesto({
           presupuesto_id: Number(id),
-          material_id: materialSeleccionado.id,
-          material_nombre: materialSeleccionado.nombre,
+
+          material_id: null,
+
+          material_nombre: materialNombre,
+
           cantidad: Number(cantidad),
-          unidad: materialSeleccionado.unidad,
-          precio_unitario: materialSeleccionado.precio,
+
+          unidad,
+
+          precio_unitario: Number(precioUnitario),
+
           subtotal,
         });
       }
 
-      setMaterialId("");
+      setMaterialNombre("");
+      setUnidad("");
       setCantidad("");
+      setPrecioUnitario("");
+
       setMaterialEditando(null);
+
       await cargarMaterialesPresupuesto();
+      await actualizarCostosPresupuesto();
     } catch (error) {
       console.error("Error al agregar/editar material:", error);
     }
@@ -1939,6 +2016,7 @@ function PresupuestoDetallePage() {
       await eliminarMaterialPresupuesto(id);
 
       await cargarMaterialesPresupuesto();
+      await actualizarCostosPresupuesto();
     } catch (error) {
       console.error(error);
     }
@@ -1947,8 +2025,10 @@ function PresupuestoDetallePage() {
   function handleEditarMaterial(material) {
     setMaterialEditando(material);
 
-    setMaterialId(material.material_id);
-    setCantidad(material.cantidad);
+    setMaterialNombre(material.material_nombre || "");
+    setUnidad(material.unidad || "");
+    setCantidad(material.cantidad || "");
+    setPrecioUnitario(material.precio_unitario || "");
   }
 
   const integrantesActivos = integrantes.filter((i) => i.activo);
@@ -2081,6 +2161,11 @@ function PresupuestoDetallePage() {
   const totalConOpcional =
     Number(precioFinal || 0) + Number(precioOpcional || 0);
 
+  const diferenciaPrecio =
+    Number(precioFinal || 0) - Number(precioCalculado || 0);
+
+  const precioDesactualizado = diferenciaPrecio !== 0;
+
   async function guardarResumenFinanciero() {
     try {
       await actualizarPresupuesto(id, {
@@ -2118,7 +2203,9 @@ function PresupuestoDetallePage() {
       );
 
       const costoTotalActualizado =
-        costoMaterialesActualizado + costoManoObraActualizado;
+        costoMaterialesActualizado +
+        costoManoObraActualizado +
+        Number(consumiblesImprevistos || 0);
 
       const montoGananciaActualizado =
         costoTotalActualizado * (Number(porcentajeGanancia) / 100);
@@ -2539,18 +2626,28 @@ function PresupuestoDetallePage() {
 
       <h3>Materiales</h3>
       <form onSubmit={handleAgregarMaterial}>
+        <input
+          type="text"
+          placeholder="Nombre del material"
+          value={materialNombre}
+          onChange={(e) => setMaterialNombre(e.target.value)}
+          required
+        />
+
         <select
-          value={materialId}
-          onChange={(e) => setMaterialId(e.target.value)}
+          value={unidad}
+          onChange={(e) => setUnidad(e.target.value)}
           required
         >
-          <option value="">Seleccionar material</option>
+          <option value="">Unidad</option>
 
-          {materiales.map((material) => (
-            <option key={material.id} value={material.id}>
-              {material.nombre}
-            </option>
-          ))}
+          <option value="Placa">Placa</option>
+          <option value="Unidad">Unidad</option>
+          <option value="Barra 6m">Barra 6m</option>
+          <option value="Metro">Metro</option>
+          <option value="m²">m²</option>
+          <option value="Litro">Litro</option>
+          <option value="Kg">Kg</option>
         </select>
 
         <input
@@ -2559,6 +2656,15 @@ function PresupuestoDetallePage() {
           placeholder="Cantidad"
           value={cantidad}
           onChange={(e) => setCantidad(e.target.value)}
+          required
+        />
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Precio Unitario"
+          value={precioUnitario}
+          onChange={(e) => setPrecioUnitario(e.target.value)}
           required
         />
 
@@ -2576,7 +2682,12 @@ function PresupuestoDetallePage() {
             {material.cantidad} {material.unidad}
           </p>
 
-          <p>${Number(material.subtotal).toLocaleString("es-AR")}</p>
+          <p>
+            Precio Unitario: $
+            {Number(material.precio_unitario).toLocaleString("es-AR")}
+          </p>
+
+          <p>Subtotal: ${Number(material.subtotal).toLocaleString("es-AR")}</p>
 
           <button onClick={() => handleEditarMaterial(material)}>Editar</button>
 
@@ -2641,9 +2752,6 @@ function PresupuestoDetallePage() {
       ))}
 
       <h4>Costo Mano de Obra: ${costoManoObra.toLocaleString("es-AR")}</h4>
-      <hr />
-
-      <h3>Costo Total: ${costoTotal.toLocaleString("es-AR")}</h3>
 
       <hr />
 
@@ -2670,7 +2778,7 @@ function PresupuestoDetallePage() {
       </p>
 
       <p>
-        <strong>Costo Total:</strong> ${costoTotal.toLocaleString("es-AR")}
+        <strong>Subtotal Costos:</strong> ${costoTotal.toLocaleString("es-AR")}
       </p>
 
       <div>
@@ -2701,7 +2809,7 @@ function PresupuestoDetallePage() {
       </div>
 
       <p>
-        <strong>Precio Calculado:</strong> $
+        <strong>Precio Trabajo:</strong> $
         {precioCalculado.toLocaleString("es-AR")}
       </p>
       <button
@@ -2744,6 +2852,17 @@ function PresupuestoDetallePage() {
           onBlur={guardarResumenFinanciero}
         />
       </div>
+
+      {precioDesactualizado && (
+        <div>
+          <p>⚠ El Precio Final fue modificado o quedó desactualizado.</p>
+
+          <p>
+            Diferencia: {diferenciaPrecio > 0 ? "+" : "-"}$
+            {Math.abs(diferenciaPrecio).toLocaleString("es-AR")}
+          </p>
+        </div>
+      )}
 
       <p>
         <strong>Total con Opcional:</strong> $

@@ -23,6 +23,8 @@ import {
 
 import jsPDF from "jspdf";
 
+import ResumenFinanciero from "../../components/Presupuestos/ResumenFinanciero";
+
 function PresupuestoDetallePage() {
   const { id } = useParams();
 
@@ -308,16 +310,14 @@ function PresupuestoDetallePage() {
 
   const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
 
-  // Valor del trabajo sin considerar flete
-  const precioTrabajo = costoTotal + montoGanancia;
-
-  const precioCalculado = precioTrabajo + Number(flete || 0);
+  // Valor del trabajo con flete
+  const precioTrabajo = costoTotal + montoGanancia + Number(flete || 0);
 
   const totalConOpcional =
     Number(precioFinal || 0) + Number(precioOpcional || 0);
 
   const diferenciaPrecio =
-    Number(precioFinal || 0) - Number(precioCalculado || 0);
+    Number(precioFinal || 0) - Number(precioTrabajo || 0);
 
   const precioDesactualizado = diferenciaPrecio !== 0;
 
@@ -382,10 +382,6 @@ function PresupuestoDetallePage() {
     } catch (error) {
       console.error(error);
     }
-  }
-
-  function redondear(valor, multiplo) {
-    return Math.ceil(valor / multiplo) * multiplo;
   }
 
   async function guardarDescripcion() {
@@ -910,119 +906,26 @@ function PresupuestoDetallePage() {
 
       <hr />
 
-      <h2>Resumen Financiero</h2>
-      <div>
-        <label>Consumibles e Imprevistos</label>
-
-        <input
-          type="number"
-          value={consumiblesImprevistos}
-          onChange={(e) => setConsumiblesImprevistos(e.target.value)}
-          onBlur={guardarResumenFinanciero}
-        />
-      </div>
-
-      <p>
-        <strong>Costo Materiales:</strong> $
-        {costoMateriales.toLocaleString("es-AR")}
-      </p>
-
-      <p>
-        <strong>Costo Mano de Obra:</strong> $
-        {costoManoObra.toLocaleString("es-AR")}
-      </p>
-
-      <p>
-        <strong>Subtotal Costos:</strong> ${costoTotal.toLocaleString("es-AR")}
-      </p>
-
-      <div>
-        <label>Ganancia %</label>
-
-        <input
-          type="number"
-          value={porcentajeGanancia}
-          onChange={(e) => setPorcentajeGanancia(e.target.value)}
-          onBlur={guardarResumenFinanciero}
-        />
-      </div>
-
-      <p>
-        <strong>Monto Ganancia:</strong> $
-        {montoGanancia.toLocaleString("es-AR")}
-      </p>
-
-      <div>
-        <label>Flete</label>
-
-        <input
-          type="number"
-          value={flete}
-          onChange={(e) => setFlete(e.target.value)}
-          onBlur={guardarResumenFinanciero}
-        />
-      </div>
-
-      <p>
-        <strong>Precio Trabajo:</strong> $
-        {precioCalculado.toLocaleString("es-AR")}
-      </p>
-      <button
-        type="button"
-        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 10000))}
-      >
-        Redondear a 10.000
-      </button>
-
-      <button
-        type="button"
-        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 50000))}
-      >
-        Redondear a 50.000
-      </button>
-
-      <button
-        type="button"
-        onClick={() => aplicarPrecioFinal(redondear(precioCalculado, 100000))}
-      >
-        Redondear a 100.000
-      </button>
-
-      <button
-        type="button"
-        onClick={() => aplicarPrecioFinal(Math.round(precioCalculado))}
-      >
-        Copiar a Precio Final
-      </button>
-
-      <div>
-        <label>
-          <strong>Precio Final</strong>
-        </label>
-
-        <input
-          type="number"
-          value={precioFinal}
-          onChange={(e) => setPrecioFinal(e.target.value)}
-          onBlur={guardarResumenFinanciero}
-        />
-      </div>
-
-      {precioDesactualizado && (
-        <div>
-          <p>⚠ El Precio Final fue modificado o quedó desactualizado.</p>
-
-          <p>
-            Diferencia: {diferenciaPrecio > 0 ? "+" : "-"}$
-            {Math.abs(diferenciaPrecio).toLocaleString("es-AR")}
-          </p>
-        </div>
-      )}
-
-      <p>
-        <strong>Total con Opcional:</strong> $
-        {totalConOpcional.toLocaleString("es-AR")}
-      </p>
+      <ResumenFinanciero
+        consumiblesImprevistos={consumiblesImprevistos}
+        setConsumiblesImprevistos={setConsumiblesImprevistos}
+        costoMateriales={costoMateriales}
+        costoManoObra={costoManoObra}
+        costoTotal={costoTotal}
+        porcentajeGanancia={porcentajeGanancia}
+        setPorcentajeGanancia={setPorcentajeGanancia}
+        montoGanancia={montoGanancia}
+        flete={flete}
+        setFlete={setFlete}
+        precioTrabajo={precioTrabajo}
+        precioFinal={precioFinal}
+        setPrecioFinal={setPrecioFinal}
+        precioDesactualizado={precioDesactualizado}
+        diferenciaPrecio={diferenciaPrecio}
+        totalConOpcional={totalConOpcional}
+        guardarResumenFinanciero={guardarResumenFinanciero}
+        aplicarPrecioFinal={aplicarPrecioFinal}
+      />
 
       <button onClick={generarPDF}>Generar PDF</button>
 
