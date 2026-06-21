@@ -452,114 +452,120 @@ function PresupuestoDetallePage() {
   }
 
   return (
-    <div>
-      <DatosGenerales
-        presupuesto={presupuesto}
-        descripcion={descripcion}
-        setDescripcion={setDescripcion}
-        guardarDescripcion={guardarDescripcion}
-        observaciones={observaciones}
-        setObservaciones={setObservaciones}
-        guardarObservaciones={guardarObservaciones}
-      />
-
-      <h3>Opcionales</h3>
-
-      <textarea
-        value={opcionales}
-        onChange={(e) => setOpcionales(e.target.value)}
-        onBlur={guardarOpcionales}
-        rows={4}
-      />
-
-      <div>
-        <label>Valor Opcional</label>
-
-        <input
-          type="number"
-          value={precioOpcional}
-          onChange={(e) => setPrecioOpcional(e.target.value)}
-          onBlur={guardarOpcionales}
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="xl:col-span-2 space-y-6">
+        <DatosGenerales
+          presupuesto={presupuesto}
+          descripcion={descripcion}
+          setDescripcion={setDescripcion}
+          guardarDescripcion={guardarDescripcion}
+          observaciones={observaciones}
+          setObservaciones={setObservaciones}
+          guardarObservaciones={guardarObservaciones}
         />
-      </div>
 
-      <div>
-        <label>Notas Internas</label>
-        <small>No se imprime en el PDF</small>
+        <h3>Opcionales</h3>
 
         <textarea
-          value={notasInternas}
-          onChange={(e) => setNotasInternas(e.target.value)}
-          onBlur={guardarNotasInternas}
+          value={opcionales}
+          onChange={(e) => setOpcionales(e.target.value)}
+          onBlur={guardarOpcionales}
           rows={4}
         />
+
+        <div>
+          <label>Valor Opcional</label>
+
+          <input
+            type="number"
+            value={precioOpcional}
+            onChange={(e) => setPrecioOpcional(e.target.value)}
+            onBlur={guardarOpcionales}
+          />
+        </div>
+
+        <div>
+          <label>Notas Internas</label>
+          <small>No se imprime en el PDF</small>
+
+          <textarea
+            value={notasInternas}
+            onChange={(e) => setNotasInternas(e.target.value)}
+            onBlur={guardarNotasInternas}
+            rows={4}
+          />
+        </div>
+
+        <MaterialesPresupuesto
+          materialNombre={materialNombre}
+          setMaterialNombre={setMaterialNombre}
+          unidad={unidad}
+          setUnidad={setUnidad}
+          cantidad={cantidad}
+          setCantidad={setCantidad}
+          precioUnitario={precioUnitario}
+          setPrecioUnitario={setPrecioUnitario}
+          materialEditando={materialEditando}
+          setMaterialEditando={setMaterialEditando}
+          materialesPresupuesto={materialesPresupuesto}
+          costoMateriales={costoMateriales}
+          handleAgregarMaterial={handleAgregarMaterial}
+          handleEditarMaterial={handleEditarMaterial}
+          handleEliminarMaterial={handleEliminarMaterial}
+        />
+
+        <ManoObraPresupuesto
+          integrantes={integrantes}
+          integranteId={integranteId}
+          setIntegranteId={setIntegranteId}
+          dias={dias}
+          setDias={setDias}
+          manoObraPresupuesto={manoObraPresupuesto}
+          costoManoObra={costoManoObra}
+          handleAgregarManoObra={handleAgregarManoObra}
+          handleEliminarManoObra={handleEliminarManoObra}
+        />
+        <div className="flex justify-end">
+          <button
+            className="px-5 py-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-medium transition"
+            onClick={() =>
+              generarPDF({
+                presupuesto,
+                descripcion,
+                opcionales,
+                precioFinal,
+                precioOpcional,
+                totalConOpcional,
+              })
+            }
+          >
+            Generar PDF
+          </button>
+        </div>
       </div>
 
-      <MaterialesPresupuesto
-        materialNombre={materialNombre}
-        setMaterialNombre={setMaterialNombre}
-        unidad={unidad}
-        setUnidad={setUnidad}
-        cantidad={cantidad}
-        setCantidad={setCantidad}
-        precioUnitario={precioUnitario}
-        setPrecioUnitario={setPrecioUnitario}
-        materialEditando={materialEditando}
-        setMaterialEditando={setMaterialEditando}
-        materialesPresupuesto={materialesPresupuesto}
-        costoMateriales={costoMateriales}
-        handleAgregarMaterial={handleAgregarMaterial}
-        handleEditarMaterial={handleEditarMaterial}
-        handleEliminarMaterial={handleEliminarMaterial}
-      />
-
-      <ManoObraPresupuesto
-        integrantes={integrantes}
-        integranteId={integranteId}
-        setIntegranteId={setIntegranteId}
-        dias={dias}
-        setDias={setDias}
-        manoObraPresupuesto={manoObraPresupuesto}
-        costoManoObra={costoManoObra}
-        handleAgregarManoObra={handleAgregarManoObra}
-        handleEliminarManoObra={handleEliminarManoObra}
-      />
-
-      <ResumenFinanciero
-        consumiblesImprevistos={consumiblesImprevistos}
-        setConsumiblesImprevistos={setConsumiblesImprevistos}
-        costoMateriales={costoMateriales}
-        costoManoObra={costoManoObra}
-        costoTotal={costoTotal}
-        porcentajeGanancia={porcentajeGanancia}
-        setPorcentajeGanancia={setPorcentajeGanancia}
-        montoGanancia={montoGanancia}
-        flete={flete}
-        setFlete={setFlete}
-        precioTrabajo={precioTrabajo}
-        precioFinal={precioFinal}
-        setPrecioFinal={setPrecioFinal}
-        precioDesactualizado={precioDesactualizado}
-        diferenciaPrecio={diferenciaPrecio}
-        totalConOpcional={totalConOpcional}
-        guardarResumenFinanciero={guardarResumenFinanciero}
-        aplicarPrecioFinal={aplicarPrecioFinal}
-      />
-
-      <button
-        onClick={() =>
-          generarPDF({
-            presupuesto,
-            descripcion,
-            opcionales,
-            precioFinal,
-            precioOpcional,
-            totalConOpcional,
-          })
-        }
-      >
-        Generar PDF
-      </button>
+      <div className="xl:sticky xl:top-6 h-fit">
+        <ResumenFinanciero
+          consumiblesImprevistos={consumiblesImprevistos}
+          setConsumiblesImprevistos={setConsumiblesImprevistos}
+          costoMateriales={costoMateriales}
+          costoManoObra={costoManoObra}
+          costoTotal={costoTotal}
+          porcentajeGanancia={porcentajeGanancia}
+          setPorcentajeGanancia={setPorcentajeGanancia}
+          montoGanancia={montoGanancia}
+          flete={flete}
+          setFlete={setFlete}
+          precioTrabajo={precioTrabajo}
+          precioFinal={precioFinal}
+          setPrecioFinal={setPrecioFinal}
+          precioDesactualizado={precioDesactualizado}
+          diferenciaPrecio={diferenciaPrecio}
+          totalConOpcional={totalConOpcional}
+          guardarResumenFinanciero={guardarResumenFinanciero}
+          aplicarPrecioFinal={aplicarPrecioFinal}
+        />
+      </div>
     </div>
   );
 }
