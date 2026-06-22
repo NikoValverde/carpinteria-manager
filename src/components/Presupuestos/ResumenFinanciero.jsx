@@ -1,5 +1,6 @@
 import SectionCard from "../ui/SectionCard";
-import { Calculator, Truck, Percent, Layers, Copy, AlertTriangle } from "lucide-react";
+import { Truck, Percent, Layers, Copy, TrendingUp, AlertTriangle } from "lucide-react";
+
 
 function redondear(valor, multiplo) {
   return Math.ceil(valor / multiplo) * multiplo;
@@ -49,7 +50,7 @@ function ResumenFinanciero({
           </span>
         </span>
       }
-      icon={Calculator}
+      icon={TrendingUp}
     >
       <div className="space-y-6">
         {/* Desglose de costos */}
@@ -266,7 +267,7 @@ function ResumenFinanciero({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border-2 border-orange-300 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/20 px-4 py-3">
+          <div className="flex items-center gap-2 rounded-xl border-2 border-orange-300 dark:border-orange-900  px-4 py-3">
             <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
               $
             </span>
@@ -284,7 +285,7 @@ function ResumenFinanciero({
                 setPrecioFinal(valorLimpio);
               }}
               onBlur={guardarResumenFinanciero}
-              className="w-full bg-transparent text-3xl font-bold text-orange-600 dark:text-orange-400 outline-none"
+              className="w-full bg-transparent text-3xl font-bold text-orange-600 dark:text-orange-400 outline-none text-center"
             />
           </div>
         </div>

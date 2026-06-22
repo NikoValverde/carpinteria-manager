@@ -15,10 +15,10 @@ function OpcionalesNotas({
     <SectionCard
       title={
         <div className="flex flex-col leading-tight">
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
-            OPCIONALES DEL PRESUPUESTOS
+          <span className="text-2xl font-bold text-zinc-100">
+            Opcionales del presupuesto
           </span>
-          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+          <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
             Información adicional del presupuesto
           </span>
         </div>
@@ -63,8 +63,8 @@ function OpcionalesNotas({
         {/* Notas Internas */}
         <div className="space-y-1.5">
           <div className="flex items-baseline justify-between gap-2">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-              Notas Internas
+            <label className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
+              NOTAS INTERNAS
             </label>
             <span className="text-[11px] italic text-zinc-400">
               No se imprime en el PDF

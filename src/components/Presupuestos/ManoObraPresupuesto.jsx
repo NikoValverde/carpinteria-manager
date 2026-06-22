@@ -32,8 +32,8 @@ function ManoObraPresupuesto({
     <SectionCard
       title={
         <span className="flex flex-col leading-tight">
-          <span>Mano de Obra</span>
-          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+          <span className="text-2xl font-bold text-zinc-100">Mano de Obra</span>
+          <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
             {manoObraPresupuesto.length}{" "}
             {manoObraPresupuesto.length === 1 ? "integrante" : "integrantes"}
           </span>
@@ -100,9 +100,9 @@ function ManoObraPresupuesto({
         ) : (
           <>
             {/* Vista tabla (desktop) */}
-            <div className="hidden overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800 md:block">
+            <div className="hidden md:block max-h-[420px] overflow-y-auto overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
               <table className="w-full text-sm">
-                <thead>
+                <thead className="sticky top-0 bg-zinc-900 z-10">
                   <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-left text-[11px] uppercase tracking-wider text-zinc-400">
                     <th className="px-4 py-2.5 font-semibold">Integrante</th>
                     <th className="px-4 py-2.5 text-right font-semibold">
@@ -159,7 +159,8 @@ function ManoObraPresupuesto({
                         </td>
 
                         <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          ${Number(item.jornal_utilizado || 0).toLocaleString(
+                          $
+                          {Number(item.jornal_utilizado || 0).toLocaleString(
                             "es-AR",
                           )}
                         </td>

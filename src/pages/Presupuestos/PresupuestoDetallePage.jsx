@@ -453,98 +453,103 @@ function PresupuestoDetallePage() {
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <div className="xl:col-span-2 space-y-6">
-        <DatosGenerales
-          presupuesto={presupuesto}
-          descripcion={descripcion}
-          setDescripcion={setDescripcion}
-          guardarDescripcion={guardarDescripcion}
-          observaciones={observaciones}
-          setObservaciones={setObservaciones}
-          guardarObservaciones={guardarObservaciones}
-        />
+    <div className="max-w-[1700px] mx-auto px-4 md:px-6 py-6">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
+        {/* COLUMNA IZQUIERDA */}
+        <div className="space-y-6">
+          <DatosGenerales
+            presupuesto={presupuesto}
+            descripcion={descripcion}
+            setDescripcion={setDescripcion}
+            guardarDescripcion={guardarDescripcion}
+            observaciones={observaciones}
+            setObservaciones={setObservaciones}
+            guardarObservaciones={guardarObservaciones}
+          />
 
-        <OpcionalesNotas
-          opcionales={opcionales}
-          setOpcionales={setOpcionales}
-          guardarOpcionales={guardarOpcionales}
-          precioOpcional={precioOpcional}
-          setPrecioOpcional={setPrecioOpcional}
-          notasInternas={notasInternas}
-          setNotasInternas={setNotasInternas}
-          guardarNotasInternas={guardarNotasInternas}
-        />
+          <OpcionalesNotas
+            opcionales={opcionales}
+            setOpcionales={setOpcionales}
+            guardarOpcionales={guardarOpcionales}
+            precioOpcional={precioOpcional}
+            setPrecioOpcional={setPrecioOpcional}
+            notasInternas={notasInternas}
+            setNotasInternas={setNotasInternas}
+            guardarNotasInternas={guardarNotasInternas}
+          />
 
-        <MaterialesPresupuesto
-          materialNombre={materialNombre}
-          setMaterialNombre={setMaterialNombre}
-          unidad={unidad}
-          setUnidad={setUnidad}
-          cantidad={cantidad}
-          setCantidad={setCantidad}
-          precioUnitario={precioUnitario}
-          setPrecioUnitario={setPrecioUnitario}
-          materialEditando={materialEditando}
-          setMaterialEditando={setMaterialEditando}
-          materialesPresupuesto={materialesPresupuesto}
-          costoMateriales={costoMateriales}
-          handleAgregarMaterial={handleAgregarMaterial}
-          handleEditarMaterial={handleEditarMaterial}
-          handleEliminarMaterial={handleEliminarMaterial}
-        />
+          <MaterialesPresupuesto
+            materialNombre={materialNombre}
+            setMaterialNombre={setMaterialNombre}
+            unidad={unidad}
+            setUnidad={setUnidad}
+            cantidad={cantidad}
+            setCantidad={setCantidad}
+            precioUnitario={precioUnitario}
+            setPrecioUnitario={setPrecioUnitario}
+            materialEditando={materialEditando}
+            setMaterialEditando={setMaterialEditando}
+            materialesPresupuesto={materialesPresupuesto}
+            costoMateriales={costoMateriales}
+            handleAgregarMaterial={handleAgregarMaterial}
+            handleEditarMaterial={handleEditarMaterial}
+            handleEliminarMaterial={handleEliminarMaterial}
+          />
 
-        <ManoObraPresupuesto
-          integrantes={integrantes}
-          integranteId={integranteId}
-          setIntegranteId={setIntegranteId}
-          dias={dias}
-          setDias={setDias}
-          manoObraPresupuesto={manoObraPresupuesto}
-          costoManoObra={costoManoObra}
-          handleAgregarManoObra={handleAgregarManoObra}
-          handleEliminarManoObra={handleEliminarManoObra}
-        />
-        <div className="flex justify-end">
-          <button
-            className="px-5 py-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-medium transition"
-            onClick={() =>
-              generarPDF({
-                presupuesto,
-                descripcion,
-                opcionales,
-                precioFinal,
-                precioOpcional,
-                totalConOpcional,
-              })
-            }
-          >
-            Generar PDF
-          </button>
+          <ManoObraPresupuesto
+            integrantes={integrantes}
+            integranteId={integranteId}
+            setIntegranteId={setIntegranteId}
+            dias={dias}
+            setDias={setDias}
+            manoObraPresupuesto={manoObraPresupuesto}
+            costoManoObra={costoManoObra}
+            handleAgregarManoObra={handleAgregarManoObra}
+            handleEliminarManoObra={handleEliminarManoObra}
+          />
+
+          <div className="flex justify-end">
+            <button
+              className="px-5 py-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-medium transition"
+              onClick={() =>
+                generarPDF({
+                  presupuesto,
+                  descripcion,
+                  opcionales,
+                  precioFinal,
+                  precioOpcional,
+                  totalConOpcional,
+                })
+              }
+            >
+              Generar PDF
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="xl:sticky xl:top-6 h-fit">
-        <ResumenFinanciero
-          consumiblesImprevistos={consumiblesImprevistos}
-          setConsumiblesImprevistos={setConsumiblesImprevistos}
-          costoMateriales={costoMateriales}
-          costoManoObra={costoManoObra}
-          costoTotal={costoTotal}
-          porcentajeGanancia={porcentajeGanancia}
-          setPorcentajeGanancia={setPorcentajeGanancia}
-          montoGanancia={montoGanancia}
-          flete={flete}
-          setFlete={setFlete}
-          precioTrabajo={precioTrabajo}
-          precioFinal={precioFinal}
-          setPrecioFinal={setPrecioFinal}
-          precioDesactualizado={precioDesactualizado}
-          diferenciaPrecio={diferenciaPrecio}
-          totalConOpcional={totalConOpcional}
-          guardarResumenFinanciero={guardarResumenFinanciero}
-          aplicarPrecioFinal={aplicarPrecioFinal}
-        />
+        {/* COLUMNA DERECHA */}
+        <div className="xl:sticky xl:top-6 h-fit">
+          <ResumenFinanciero
+            consumiblesImprevistos={consumiblesImprevistos}
+            setConsumiblesImprevistos={setConsumiblesImprevistos}
+            costoMateriales={costoMateriales}
+            costoManoObra={costoManoObra}
+            costoTotal={costoTotal}
+            porcentajeGanancia={porcentajeGanancia}
+            setPorcentajeGanancia={setPorcentajeGanancia}
+            montoGanancia={montoGanancia}
+            flete={flete}
+            setFlete={setFlete}
+            precioTrabajo={precioTrabajo}
+            precioFinal={precioFinal}
+            setPrecioFinal={setPrecioFinal}
+            precioDesactualizado={precioDesactualizado}
+            diferenciaPrecio={diferenciaPrecio}
+            totalConOpcional={totalConOpcional}
+            guardarResumenFinanciero={guardarResumenFinanciero}
+            aplicarPrecioFinal={aplicarPrecioFinal}
+          />
+        </div>
       </div>
     </div>
   );

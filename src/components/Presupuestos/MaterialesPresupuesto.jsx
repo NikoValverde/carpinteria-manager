@@ -22,8 +22,8 @@ function MaterialesPresupuesto({
     <SectionCard
       title={
         <span className="flex flex-col leading-tight">
-          <span>Materiales</span>
-          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+          <span className="text-2xl font-bold text-zinc-100">Materiales</span>
+          <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
             {materialesPresupuesto.length}{" "}
             {materialesPresupuesto.length === 1 ? "ítem" : "ítems"} cargados
           </span>
@@ -61,10 +61,14 @@ function MaterialesPresupuesto({
               required
               className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
             >
-              <option value="">Unidad</option>
+              <option value="" disabled hidden>
+                Unidad
+              </option>
 
-              <option value="Placa">Placa</option>
+              <option value="Placas">Placas</option>
               <option value="Unidad">Unidad</option>
+              <option value="Paquete">Paquete</option>
+              <option value="Caja">Caja</option>
               <option value="Barra 6m">Barra 6m</option>
               <option value="Metro">Metro</option>
               <option value="m²">m²</option>
@@ -143,9 +147,9 @@ function MaterialesPresupuesto({
         ) : (
           <>
             {/* Vista tabla (desktop) */}
-            <div className="hidden overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800 md:block">
+            <div className="hidden md:block max-h-[420px] overflow-y-auto overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
               <table className="w-full text-sm">
-                <thead>
+                <thead className="sticky top-0 bg-zinc-900 z-10">
                   <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-left text-[11px] uppercase tracking-wider text-zinc-400">
                     <th className="px-4 py-2.5 font-semibold">Material</th>
                     <th className="px-4 py-2.5 font-semibold">Cantidad</th>
@@ -179,7 +183,10 @@ function MaterialesPresupuesto({
                       </td>
 
                       <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                        ${Number(material.precio_unitario).toLocaleString("es-AR")}
+                        $
+                        {Number(material.precio_unitario).toLocaleString(
+                          "es-AR",
+                        )}
                       </td>
 
                       <td className="px-4 py-3 text-right font-semibold text-zinc-900 dark:text-zinc-100">
@@ -272,7 +279,7 @@ function MaterialesPresupuesto({
             Total Materiales
           </span>
           <span className="text-lg font-bold text-orange-500">
-            ${costoMateriales.toLocaleString("es-AR")}
+            ${Number(costoMateriales).toLocaleString("es-AR")}
           </span>
         </div>
       </div>
