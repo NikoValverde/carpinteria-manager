@@ -25,6 +25,7 @@ import ResumenFinanciero from "../../components/Presupuestos/ResumenFinanciero";
 import MaterialesPresupuesto from "../../components/Presupuestos/MaterialesPresupuesto";
 import ManoObraPresupuesto from "../../components/Presupuestos/ManoObraPresupuesto";
 import DatosGenerales from "../../components/Presupuestos/DatosGenerales";
+import OpcionalesNotas from "../../components/Presupuestos/OpcionalesNotas";
 
 import { generarPDF } from "../../utils/pdfGenerator";
 
@@ -464,37 +465,16 @@ function PresupuestoDetallePage() {
           guardarObservaciones={guardarObservaciones}
         />
 
-        <h3>Opcionales</h3>
-
-        <textarea
-          value={opcionales}
-          onChange={(e) => setOpcionales(e.target.value)}
-          onBlur={guardarOpcionales}
-          rows={4}
+        <OpcionalesNotas
+          opcionales={opcionales}
+          setOpcionales={setOpcionales}
+          guardarOpcionales={guardarOpcionales}
+          precioOpcional={precioOpcional}
+          setPrecioOpcional={setPrecioOpcional}
+          notasInternas={notasInternas}
+          setNotasInternas={setNotasInternas}
+          guardarNotasInternas={guardarNotasInternas}
         />
-
-        <div>
-          <label>Valor Opcional</label>
-
-          <input
-            type="number"
-            value={precioOpcional}
-            onChange={(e) => setPrecioOpcional(e.target.value)}
-            onBlur={guardarOpcionales}
-          />
-        </div>
-
-        <div>
-          <label>Notas Internas</label>
-          <small>No se imprime en el PDF</small>
-
-          <textarea
-            value={notasInternas}
-            onChange={(e) => setNotasInternas(e.target.value)}
-            onBlur={guardarNotasInternas}
-            rows={4}
-          />
-        </div>
 
         <MaterialesPresupuesto
           materialNombre={materialNombre}

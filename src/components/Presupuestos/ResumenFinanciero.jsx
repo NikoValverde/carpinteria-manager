@@ -212,7 +212,9 @@ function ResumenFinanciero({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => aplicarPrecioFinal(redondear(precioTrabajo, 10000))}
+              onClick={() =>
+                aplicarPrecioFinal(redondear(precioTrabajo, 10000))
+              }
               className="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               Redondear a $10.000
@@ -220,7 +222,9 @@ function ResumenFinanciero({
 
             <button
               type="button"
-              onClick={() => aplicarPrecioFinal(redondear(precioTrabajo, 50000))}
+              onClick={() =>
+                aplicarPrecioFinal(redondear(precioTrabajo, 50000))
+              }
               className="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               Redondear a $50.000
@@ -267,9 +271,18 @@ function ResumenFinanciero({
               $
             </span>
             <input
-              type="number"
-              value={precioFinal}
-              onChange={(e) => setPrecioFinal(e.target.value)}
+              type="text"
+              value={
+                precioFinal
+                  ? new Intl.NumberFormat("es-ES").format(precioFinal)
+                  : ""
+              }
+              onChange={(e) => {
+                const valorLimpio = e.target.value
+                  .replace(/\./g, "")
+                  .replace(/[^0-9]/g, "");
+                setPrecioFinal(valorLimpio);
+              }}
               onBlur={guardarResumenFinanciero}
               className="w-full bg-transparent text-3xl font-bold text-orange-600 dark:text-orange-400 outline-none"
             />
