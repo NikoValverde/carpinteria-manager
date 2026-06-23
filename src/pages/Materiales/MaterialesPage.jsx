@@ -1,3 +1,4 @@
+import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import {
   obtenerMateriales,
@@ -15,6 +16,8 @@ import {
   Search,
   Ruler,
   Tag,
+  Clock,
+  Calendar,
 } from "lucide-react";
 
 // Paleta cíclica puramente visual para los badges de categoría.
@@ -46,6 +49,32 @@ function formatearPrecio(valor) {
   return numero.toLocaleString("es-AR");
 }
 
+// Formatea created_at (timestamptz de Supabase) a "DD/MM/YYYY HH:mm".
+function formatearFechaHora(valor) {
+  if (!valor) return "—";
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return "—";
+  return fecha.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Formatea solo la fecha a "DD/MM/YYYY" para el pie de la tabla.
+function formatearFechaCorta(valor) {
+  if (!valor) return "—";
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return "—";
+  return fecha.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 function MaterialesPage() {
   const [materiales, setMateriales] = useState([]);
   const [materialEditando, setMaterialEditando] = useState(null);
@@ -61,6 +90,11 @@ function MaterialesPage() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todas");
+
+const { perfil } = useAuth();
+
+const usuarioNombre = perfil?.nombre || "Nicolás Valverde";
+  
 
   async function cargarMateriales() {
     try {
@@ -78,6 +112,7 @@ function MaterialesPage() {
     fetchData();
   }, []);
 
+  
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -139,11 +174,7 @@ function MaterialesPage() {
   const categoriasDisponibles = [
     "Todas",
     ...Array.from(
-      new Set(
-        materiales
-          .map((material) => material.categoria)
-          .filter(Boolean)
-      )
+      new Set(materiales.map((material) => material.categoria).filter(Boolean)),
     ),
   ];
 
@@ -166,10 +197,22 @@ function MaterialesPage() {
       ? Math.round(
           materialesFiltrados.reduce(
             (acc, material) => acc + (Number(material.precio) || 0),
-            0
-          ) / materialesFiltrados.length
+            0,
+          ) / materialesFiltrados.length,
         )
       : 0;
+
+  // Última actualización: tomamos el created_at más reciente entre los materiales.
+  // Si no hay datos, usamos la fecha actual como referencia visual.
+  const ultimaActualizacion = materiales.reduce((masReciente, material) => {
+    if (!material.created_at) return masReciente;
+    const actual = new Date(material.created_at).getTime();
+    if (Number.isNaN(actual)) return masReciente;
+    return actual > masReciente ? actual : masReciente;
+  }, 0);
+
+  const fechaUltimaActualizacion =
+    ultimaActualizacion > 0 ? new Date(ultimaActualizacion) : new Date();
 
   return (
     <div className="space-y-6">
@@ -337,7 +380,7 @@ function MaterialesPage() {
         icon={Package}
       >
         <div className="space-y-4">
-          {/* Buscador + filtro de categorías */}
+          {/* Buscador + filtro de categorías (select desplegable) */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <div className="relative lg:w-72">
               <Search
@@ -353,24 +396,34 @@ function MaterialesPage() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {categoriasDisponibles.map((cat) => {
-                const activo = filtroCategoria === cat;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setFiltroCategoria(cat)}
-                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                      activo
-                        ? "bg-orange-600 text-white shadow-sm"
-                        : "border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
+            <div className="relative lg:w-56">
+              <Tag
+                size={16}
+                className="pointer-events-none absolute inset-y-0 left-3 my-auto text-zinc-400"
+              />
+              <select
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-2 pl-9 pr-8 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              >
+                {categoriasDisponibles.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === "Todas" ? "Todas las categorías" : cat}
+                  </option>
+                ))}
+              </select>
+              <svg
+                className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-zinc-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </div>
           </div>
 
@@ -391,13 +444,22 @@ function MaterialesPage() {
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 z-10">
                       <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-left text-[11px] uppercase tracking-wider text-zinc-400 backdrop-blur">
-                        <th className="px-4 py-2.5 font-semibold">Nombre</th>
-                        <th className="px-4 py-2.5 font-semibold">Categoría</th>
-                        <th className="px-4 py-2.5 font-semibold">Unidad</th>
-                        <th className="px-4 py-2.5 text-right font-semibold">
+                        <th className="px-4 py-2.5 font-semibold text-center">
+                          Nombre
+                        </th>
+                        <th className="px-4 py-2.5 font-semibold text-center">
+                          Categoría
+                        </th>
+                        <th className="px-4 py-2.5 font-semibold text-center">
+                          Unidad
+                        </th>
+                        <th className="px-4 py-2.5 font-semibold text-center">
                           Precio Unitario
                         </th>
-                        <th className="px-4 py-2.5 text-right font-semibold">
+                        <th className="px-4 py-2.5 font-semibold text-center">
+                          Fecha de creación
+                        </th>
+                        <th className="px-4 py-2.5 font-semibold text-center">
                           Acciones
                         </th>
                       </tr>
@@ -412,11 +474,11 @@ function MaterialesPage() {
                             key={material.id}
                             className="border-b border-zinc-100 dark:border-zinc-800/60 transition-colors last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
                           >
-                            <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">
+                            <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100 text-center">
                               {material.nombre}
                             </td>
 
-                            <td className="px-4 py-3">
+                            <td className="px-4 py-3 text-center">
                               {material.categoria && (
                                 <span
                                   className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${color.bg} ${color.text}`}
@@ -426,19 +488,26 @@ function MaterialesPage() {
                               )}
                             </td>
 
-                            <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                              <span className="flex items-center gap-1.5">
+                            <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300 text-center">
+                              <span className="flex items-center gap-1.5 justify-center">
                                 <Ruler size={12} className="text-zinc-400" />
                                 {material.unidad}
                               </span>
                             </td>
 
-                            <td className="px-4 py-3 text-right font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                            <td className="px-4 py-3 text-center font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
                               $ {formatearPrecio(material.precio)}
                             </td>
 
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-2">
+                            <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 text-center">
+                              <span className="flex justify-center items-center gap-1.5 whitespace-nowrap tabular-nums">
+                                <Calendar size={12} className="text-zinc-400" />
+                                {formatearFechaHora(material.created_at)}
+                              </span>
+                            </td>
+
+                            <td className="px-4 py-3 text-center">
+                              <div className="flex items-center justify-center gap-2">
                                 <button
                                   type="button"
                                   onClick={() => handleEditar(material)}
@@ -465,14 +534,17 @@ function MaterialesPage() {
                   </table>
                 </div>
 
-                {/* Pie con resumen */}
-                <div className="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span>{materialesFiltrados.length} materiales</span>
-                  <span>
-                    Valor promedio:{" "}
-                    <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                      $ {formatearPrecio(promedioPrecio)}
-                    </span>
+                {/* Pie con resumen + última actualización */}
+                <div className="flex flex-col gap-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="flex items-center gap-3">
+                    <span>{materialesFiltrados.length} materiales</span>
+                  </span>
+
+                  <span className="flex items-center gap-1.5 text-zinc-400 dark:text-zinc-500 sm:justify-end">
+                    <Clock size={12} className="text-zinc-400" />
+                    Última actualización: {" "}
+                    {formatearFechaCorta(fechaUltimaActualizacion)} · por{" "}
+                    {usuarioNombre}
                   </span>
                 </div>
               </div>
@@ -532,22 +604,36 @@ function MaterialesPage() {
                             $ {formatearPrecio(material.precio)}
                           </span>
                         </div>
+
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500">
+                          <Calendar size={12} className="text-zinc-400" />
+                          {formatearFechaHora(material.created_at)}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Resumen mobile */}
-                <div className="mt-3 flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span className="flex items-center gap-1.5">
-                    <Tag size={12} className="text-zinc-400" />
-                    {materialesFiltrados.length} materiales
-                  </span>
-                  <span>
-                    Promedio:{" "}
-                    <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                      $ {formatearPrecio(promedioPrecio)}
+                {/* Resumen mobile + última actualización */}
+                <div className="mt-3 flex flex-col gap-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Tag size={12} className="text-zinc-400" />
+                      {materialesFiltrados.length} materiales
                     </span>
+                    <span>
+                      Promedio:{" "}
+                      <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                        $ {formatearPrecio(promedioPrecio)}
+                      </span>
+                    </span>
+                  </div>
+
+                  <span className="flex items-center gap-1.5 border-t border-zinc-200 dark:border-zinc-700/60 pt-2 text-zinc-400 dark:text-zinc-500">
+                    <Clock size={12} className="text-zinc-400" />
+                    Última actualización: Actualizado el{" "}
+                    {formatearFechaCorta(fechaUltimaActualizacion)} · por{" "}
+                    {usuarioNombre}
                   </span>
                 </div>
               </div>

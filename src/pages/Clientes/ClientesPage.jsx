@@ -157,7 +157,9 @@ function ClientesPage() {
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {clientes.length}{" "}
-            {clientes.length === 1 ? "cliente registrado" : "clientes registrados"}
+            {clientes.length === 1
+              ? "cliente registrado"
+              : "clientes registrados"}
           </p>
         </div>
 
@@ -343,13 +345,19 @@ function ClientesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-left text-[11px] uppercase tracking-wider text-zinc-400">
-                      <th className="px-4 py-2.5 font-semibold">Cliente</th>
-                      <th className="px-4 py-2.5 font-semibold">Contacto</th>
-                      <th className="px-4 py-2.5 font-semibold">Dirección</th>
-                      <th className="px-4 py-2.5 font-semibold">
+                      <th className="px-4 py-2.5 font-semibold text-center">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-2.5 font-semibold text-center">
+                        Contacto
+                      </th>
+                      <th className="px-4 py-2.5 font-semibold text-center">
+                        Dirección
+                      </th>
+                      <th className="px-4 py-2.5 font-semibold text-center">
                         Observaciones
                       </th>
-                      <th className="px-4 py-2.5 text-right font-semibold">
+                      <th className="px-4 py-2.5 font-semibold text-center">
                         Acciones
                       </th>
                     </tr>
@@ -365,7 +373,7 @@ function ClientesPage() {
                           className="border-b border-zinc-100 dark:border-zinc-800/60 last:border-0"
                         >
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-left gap-3">
                               <div
                                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${color.bg} ${color.text}`}
                               >
@@ -377,8 +385,8 @@ function ClientesPage() {
                             </div>
                           </td>
 
-                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                            <div className="flex flex-col gap-1">
+                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300 text-center">
+                            <div className="flex flex-col items-center gap-1">
                               {cliente.email && (
                                 <span className="flex items-center gap-1.5">
                                   <Mail size={12} className="text-zinc-400" />
@@ -394,9 +402,9 @@ function ClientesPage() {
                             </div>
                           </td>
 
-                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300 text-center">
                             {cliente.direccion && (
-                              <span className="flex items-center gap-1.5">
+                              <span className="flex items-center justify-center gap-1.5">
                                 <MapPin
                                   size={12}
                                   className="shrink-0 text-zinc-400"
@@ -406,12 +414,12 @@ function ClientesPage() {
                             )}
                           </td>
 
-                          <td className="max-w-xs px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                          <td className="max-w-xs px-4 py-3 text-zinc-600 dark:text-zinc-300 text-center">
                             {cliente.observaciones}
                           </td>
 
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => handleEditar(cliente)}
@@ -496,7 +504,10 @@ function ClientesPage() {
                         )}
                         {cliente.direccion && (
                           <p className="flex items-center gap-1.5">
-                            <MapPin size={12} className="shrink-0 text-zinc-400" />
+                            <MapPin
+                              size={12}
+                              className="shrink-0 text-zinc-400"
+                            />
                             {cliente.direccion}
                           </p>
                         )}
