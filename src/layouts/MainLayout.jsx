@@ -1,9 +1,27 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Users, Package, HardHat, FileText, Hammer, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Shield, UserCircle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const { perfil, logout } = useAuth();
+
+function getInitials(nombre) {
+  if (!nombre) return "";
+  const partes = nombre.trim().split(" ");
+  if (partes.length === 1) {
+    // Si solo hay un nombre → primeras dos letras
+    return partes[0].slice(0, 2).toUpperCase();
+  } else {
+    // Si hay más de una palabra → primera letra de las dos primeras
+    return (partes[0][0] + partes[1][0]).toUpperCase();
+  }
+}
+
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -86,21 +104,65 @@ function MainLayout() {
 
           {/* Usuario */}
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 font-medium">
-              NV
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className="flex items-center gap-3 rounded-xl border border-transparent bg-transparent px-2 py-1.5 transition hover:border-zinc-700 hover:bg-zinc-800"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-purple-600 font-semibold text-white">
+                  {getInitials(perfil?.nombre) || "NV"}
+                </div>
+
+                <div className="text-left">
+                  <p className="text-sm font-medium text-zinc-100">
+                    {perfil?.nombre || "Usuario"}
+                  </p>
+
+                  <div className="flex items-center gap-1 text-xs text-zinc-500">
+                    <Shield size={12} />
+                    {perfil?.rol || "usuario"}
+                  </div>
+                </div>
+
+                <ChevronDown
+                  size={16}
+                  className={`text-zinc-500 transition ${
+                    userMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-14 w-56 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl">
+                  <div className="border-b border-zinc-800 p-4">
+                    <p className="text-sm font-medium text-white">
+                      {perfil?.nombre}
+                    </p>
+
+                    <p className="text-xs text-zinc-500">{perfil?.rol}</p>
+                  </div>
+
+                  <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-800">
+                    <UserCircle size={16} />
+                    Mi perfil
+                  </button>
+
+                  <button
+                    onClick={logout}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-950/30"
+                  >
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
             </div>
 
-            <span className="hidden text-sm text-zinc-300 sm:inline">
-              Nicolás
-            </span>
-
-            {/* Botón hamburguesa (solo mobile) */}
+            {/* Botón hamburguesa */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-800 hover:text-white md:hidden"
-              aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -170,6 +232,33 @@ function MainLayout() {
                 <FileText size={16} />
                 Presupuestos
               </NavLink>
+
+              <div className="mt-4 border-t border-zinc-800 pt-4">
+                <div className="mb-3 flex items-center gap-3 px-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-purple-600 font-semibold text-white">
+                    {getInitials(perfil?.nombre) || "NV"}
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-zinc-100">
+                      {perfil?.nombre}
+                    </p>
+
+                    <p className="text-xs text-zinc-500">{perfil?.rol}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    await logout();
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-red-400 transition hover:bg-red-950/30"
+                >
+                  <LogOut size={16} />
+                  Cerrar sesión
+                </button>
+              </div>
             </div>
           </nav>
         )}
