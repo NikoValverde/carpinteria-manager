@@ -1,5 +1,6 @@
+import { useState, useRef, useEffect } from "react";
 import SectionCard from "../ui/SectionCard";
-import { Package, Plus, Pencil, Trash2 } from "lucide-react";
+import { Package, Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 
 {/*componente para mostrar el listado de materiales y el formulario de alta/edición*/}
 function MaterialesPresupuesto({
@@ -23,6 +24,48 @@ function MaterialesPresupuesto({
   handleEditarMaterial,
   handleEliminarMaterial,
 }) {
+  // --- Navegación con teclado para el listado de sugerencias (solo UI, no toca lógica de datos) ---
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const suggestionRefs = useRef([]);
+
+  // Cuando cambia la lista de sugerencias (nuevo prop), ajustamos el índice
+  // resaltado durante el render en vez de en un efecto, siguiendo el patrón
+  // recomendado por React para "adjusting state when a prop changes".
+  const [prevSugerencias, setPrevSugerencias] = useState(sugerenciasMateriales);
+  if (sugerenciasMateriales !== prevSugerencias) {
+    setPrevSugerencias(sugerenciasMateriales);
+    setHighlightedIndex(sugerenciasMateriales.length > 0 ? 0 : -1);
+  }
+
+  useEffect(() => {
+    if (highlightedIndex >= 0 && suggestionRefs.current[highlightedIndex]) {
+      suggestionRefs.current[highlightedIndex].scrollIntoView({
+        block: "nearest",
+      });
+    }
+  }, [highlightedIndex]);
+
+  const handleKeyDownMaterial = (e) => {
+    if (sugerenciasMateriales.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < sugerenciasMateriales.length - 1 ? prev + 1 : 0,
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : sugerenciasMateriales.length - 1,
+      );
+    } else if (e.key === "Enter" && highlightedIndex >= 0) {
+      e.preventDefault();
+      seleccionarMaterial(sugerenciasMateriales[highlightedIndex]);
+    } else if (e.key === "Escape") {
+      setHighlightedIndex(-1);
+    }
+  };
+
   return (
     <SectionCard
       title={
@@ -46,46 +89,86 @@ function MaterialesPresupuesto({
             <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
               Material
             </label>
-            <input
-              type="text"
-              placeholder="Nombre del material"
-              value={materialNombre}
-              onChange={(e) => setMaterialNombre(e.target.value)}
-              required
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                role="combobox"
+                aria-expanded={sugerenciasMateriales.length > 0}
+                aria-controls="material-suggestions-listbox"
+                aria-activedescendant={
+                  highlightedIndex >= 0
+                    ? `material-suggestion-${highlightedIndex}`
+                    : undefined
+                }
+                autoComplete="off"
+                placeholder="Nombre del material"
+                value={materialNombre}
+                onChange={(e) => setMaterialNombre(e.target.value)}
+                onKeyDown={handleKeyDownMaterial}
+                required
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              />
+
+              {/* Sugerencias de materiales: panel flotante, mismo ancho que el input */}
+              {sugerenciasMateriales.length > 0 && (
+                <div
+                  id="material-suggestions-listbox"
+                  role="listbox"
+                  className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[300px] w-full overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 p-1.5 shadow-xl"
+                >
+                  {sugerenciasMateriales.map((material, index) => {
+                    const isHighlighted = index === highlightedIndex;
+                    return (
+                      <button
+                        key={material.id}
+                        id={`material-suggestion-${index}`}
+                        ref={(el) => (suggestionRefs.current[index] = el)}
+                        type="button"
+                        role="option"
+                        aria-selected={isHighlighted}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        onClick={() => seleccionarMaterial(material)}
+                        className={`mb-1 block w-full rounded-md border px-3 py-2.5 text-left transition-colors last:mb-0 ${
+                          isHighlighted
+                            ? "border-orange-500/50 bg-orange-500/10"
+                            : "border-transparent hover:border-zinc-700 hover:bg-zinc-800/70"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span
+                            className="min-w-0 flex-1 truncate font-medium text-zinc-100"
+                            title={material.nombre}
+                          >
+                            {material.nombre}
+                          </span>
+                          <span className="shrink-0 text-xs font-semibold text-orange-400">
+                            ${Number(material.precio).toLocaleString("es-AR")}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 truncate text-xs text-zinc-500">
+                          {material.unidad}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Advertencias */}
             {advertenciasMaterial.length > 0 && (
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 space-y-1.5">
                 {advertenciasMaterial.map((advertencia, index) => (
                   <div
                     key={index}
-                    className="rounded-md border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-xs text-orange-300"
+                    className="flex items-start gap-2 rounded-lg border-l-2 border-orange-500 bg-orange-500/10 px-3 py-2 text-xs text-orange-300"
                   >
-                    ⚠ {advertencia}
+                    <AlertTriangle
+                      size={14}
+                      className="mt-0.5 shrink-0 text-orange-400"
+                    />
+                    <span>{advertencia}</span>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Sugerencias de materiales */}
-            {sugerenciasMateriales.length > 0 && (
-              <div className="mt-2 rounded-lg border border-zinc-700 bg-zinc-900 p-2">
-                {sugerenciasMateriales.map((material) => (
-                  <button
-                    key={material.id}
-                    type="button"
-                    onClick={() => seleccionarMaterial(material)}
-                    className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-zinc-800"
-                  >
-                    <div className="font-medium">{material.nombre}</div>
-
-                    <div className="text-xs text-zinc-400">
-                      {material.unidad} · $
-                      {Number(material.precio).toLocaleString("es-AR")}
-                    </div>
-                  </button>
                 ))}
               </div>
             )}
@@ -95,12 +178,13 @@ function MaterialesPresupuesto({
             {materialNombre.trim() &&
               sugerenciasMateriales.length === 0 &&
               !materialSeleccionado && (
-                <div className="border-t border-zinc-700 mt-2 pt-2">
+                <div className="mt-2 rounded-lg border border-dashed border-zinc-700 bg-zinc-900/60 p-1.5">
                   <button
                     type="button"
-                    className="w-full rounded-md px-3 py-2 text-left text-sm text-orange-400 hover:bg-zinc-800"
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-orange-400 transition-colors hover:bg-zinc-800"
                   >
-                    ➕ Crear "{materialNombre}"
+                    <Plus size={14} />
+                    Crear "{materialNombre}"
                   </button>
                 </div>
               )}
