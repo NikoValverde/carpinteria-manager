@@ -1,6 +1,7 @@
 import SectionCard from "../ui/SectionCard";
 import { Package, Plus, Pencil, Trash2 } from "lucide-react";
 
+{/*componente para mostrar el listado de materiales y el formulario de alta/edición*/}
 function MaterialesPresupuesto({
   materialNombre,
   setMaterialNombre,
@@ -12,6 +13,10 @@ function MaterialesPresupuesto({
   setPrecioUnitario,
   materialEditando,
   setMaterialEditando /* Agregado para permitir editar materiales */,
+  advertenciasMaterial,
+  sugerenciasMateriales,
+  seleccionarMaterial,
+  materialSeleccionado,
   materialesPresupuesto,
   costoMateriales,
   handleAgregarMaterial,
@@ -49,6 +54,56 @@ function MaterialesPresupuesto({
               required
               className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
             />
+
+            {/* Advertencias */}
+            {advertenciasMaterial.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {advertenciasMaterial.map((advertencia, index) => (
+                  <div
+                    key={index}
+                    className="rounded-md border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-xs text-orange-300"
+                  >
+                    ⚠ {advertencia}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Sugerencias de materiales */}
+            {sugerenciasMateriales.length > 0 && (
+              <div className="mt-2 rounded-lg border border-zinc-700 bg-zinc-900 p-2">
+                {sugerenciasMateriales.map((material) => (
+                  <button
+                    key={material.id}
+                    type="button"
+                    onClick={() => seleccionarMaterial(material)}
+                    className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-zinc-800"
+                  >
+                    <div className="font-medium">{material.nombre}</div>
+
+                    <div className="text-xs text-zinc-400">
+                      {material.unidad} · $
+                      {Number(material.precio).toLocaleString("es-AR")}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Botón para crear nuevo material */}
+
+            {materialNombre.trim() &&
+              sugerenciasMateriales.length === 0 &&
+              !materialSeleccionado && (
+                <div className="border-t border-zinc-700 mt-2 pt-2">
+                  <button
+                    type="button"
+                    className="w-full rounded-md px-3 py-2 text-left text-sm text-orange-400 hover:bg-zinc-800"
+                  >
+                    ➕ Crear "{materialNombre}"
+                  </button>
+                </div>
+              )}
           </div>
 
           <div className="w-full space-y-1 sm:w-36">

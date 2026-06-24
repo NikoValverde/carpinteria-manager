@@ -29,6 +29,14 @@ import OpcionalesNotas from "../../components/Presupuestos/OpcionalesNotas";
 
 import { generarPDF } from "../../utils/pdfGenerator";
 
+import {
+  obtenerMateriales,
+  crearMaterial,
+} from "../../services/materialesService";
+
+import { normalizarMaterial } from "../../utils/materiales";
+import { validarMaterial } from "../../utils/validarMaterial";
+
 function PresupuestoDetallePage() {
   const { id } = useParams();
 
@@ -47,6 +55,10 @@ function PresupuestoDetallePage() {
   const [precioUnitario, setPrecioUnitario] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [materialEditando, setMaterialEditando] = useState(null);
+  const [materialSeleccionado, setMaterialSeleccionado] = useState(null);
+  const [materialesCatalogo, setMaterialesCatalogo] = useState([]);
+  const [sugerenciasMateriales, setSugerenciasMateriales] = useState([]);
+  const [advertenciasMaterial, setAdvertenciasMaterial] = useState([]);
   
 
   // Estado para mano de obra
@@ -70,6 +82,61 @@ function PresupuestoDetallePage() {
     }
   }
 
+  async function cargarCatalogoMateriales() {
+    try {
+      const data = await obtenerMateriales();
+
+      console.log("DATA:", data);
+
+      setMaterialesCatalogo(data);
+    } catch (error) {
+      console.error("ERROR:", error);
+    }
+  }
+
+function buscarMateriales(texto) {
+  setMaterialNombre(texto);
+  setAdvertenciasMaterial(validarMaterial(texto));
+  setMaterialSeleccionado(null);
+
+  if (!texto.trim()) {
+    setSugerenciasMateriales([]);
+    return;
+  }
+
+  const busqueda = texto.toLowerCase();
+
+  // Coincidencias que comienzan con la búsqueda
+  const empieza = materialesCatalogo.filter((material) =>
+    material.nombre.toLowerCase().startsWith(busqueda),
+  );
+
+  // Coincidencias en palabras posteriores
+  const contiene = materialesCatalogo.filter((material) => {
+    const nombre = material.nombre.toLowerCase();
+
+    return (
+      !nombre.startsWith(busqueda) &&
+      nombre.split(" ").some((palabra) => palabra.startsWith(busqueda))
+    );
+  });
+
+  // Primero las principales y luego las secundarias
+  setSugerenciasMateriales([...empieza, ...contiene].slice(0, 8));
+}
+
+function seleccionarMaterial(material) {
+  setMaterialSeleccionado(material);
+  setMaterialNombre(material.nombre);
+  setUnidad(material.unidad || "");
+  setPrecioUnitario(material.precio || "");
+  setSugerenciasMateriales([]);
+}
+
+useEffect(() => {
+  console.log(materialSeleccionado);
+}, [materialSeleccionado]);
+
   async function cargarIntegrantes() {
     try {
       const data = await obtenerIntegrantes();
@@ -92,7 +159,9 @@ function PresupuestoDetallePage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log(materialesCatalogo);
       await cargarMaterialesPresupuesto();
+      await cargarCatalogoMateriales();
       await cargarIntegrantes();
       await cargarManoObra();
       try {
@@ -122,9 +191,26 @@ function PresupuestoDetallePage() {
     try {
       const subtotal = Number(cantidad) * Number(precioUnitario);
 
+      let materialId = null;
+
+      if (materialSeleccionado) {
+        materialId = materialSeleccionado.id;
+      } else {
+        const nuevoMaterial = await crearMaterial({
+          nombre: normalizarMaterial(materialNombre),
+          categoria: "General",
+          unidad,
+          precio: Number(precioUnitario),
+        });
+
+        materialId = nuevoMaterial[0].id;
+
+        await cargarCatalogoMateriales();
+      }
+
       if (materialEditando) {
         await actualizarMaterialPresupuesto(materialEditando.id, {
-          material_id: null,
+          material_id: materialId,
 
           material_nombre: materialNombre,
 
@@ -140,7 +226,7 @@ function PresupuestoDetallePage() {
         await agregarMaterialPresupuesto({
           presupuesto_id: Number(id),
 
-          material_id: null,
+          material_id: materialId,
 
           material_nombre: materialNombre,
 
@@ -160,6 +246,8 @@ function PresupuestoDetallePage() {
       setPrecioUnitario("");
 
       setMaterialEditando(null);
+      setMaterialSeleccionado(null);
+      setSugerenciasMateriales([]);
 
       await cargarMaterialesPresupuesto();
       await actualizarCostosPresupuesto();
@@ -459,6 +547,8 @@ function PresupuestoDetallePage() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
         {/* COLUMNA IZQUIERDA */}
         <div className="space-y-6">
+
+          {/*COMPONENTES DE DATOS GENERALES, OPCIONALES Y NOTAS, MATERIALES Y MANO DE OBRA*/}
           <DatosGenerales
             presupuesto={presupuesto}
             descripcion={descripcion}
@@ -482,7 +572,11 @@ function PresupuestoDetallePage() {
 
           <MaterialesPresupuesto
             materialNombre={materialNombre}
-            setMaterialNombre={setMaterialNombre}
+            setMaterialNombre={buscarMateriales}
+            sugerenciasMateriales={sugerenciasMateriales}
+            advertenciasMaterial={advertenciasMaterial}
+            materialSeleccionado={materialSeleccionado}
+            seleccionarMaterial={seleccionarMaterial}
             unidad={unidad}
             setUnidad={setUnidad}
             cantidad={cantidad}
