@@ -53,3 +53,15 @@ export async function actualizarMaterial(id, material) {
 
   return data;
 }
+
+export async function buscarMaterialPorNombre(nombre) {
+  const { data, error } = await supabase
+    .from("materiales")
+    .select("*")
+    .ilike("nombre", `%${nombre}%`)
+    .limit(10);
+
+  if (error) throw error;
+
+  return data;
+}

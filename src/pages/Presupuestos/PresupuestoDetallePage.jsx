@@ -38,6 +38,7 @@ function PresupuestoDetallePage() {
   const [notasInternas, setNotasInternas] = useState("");
   const [opcionales, setOpcionales] = useState("");
   const [precioOpcional, setPrecioOpcional] = useState(0);
+  
 
   // Estado para materiales
   const [materialesPresupuesto, setMaterialesPresupuesto] = useState([]);
@@ -46,6 +47,7 @@ function PresupuestoDetallePage() {
   const [precioUnitario, setPrecioUnitario] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [materialEditando, setMaterialEditando] = useState(null);
+  
 
   // Estado para mano de obra
   const [integrantes, setIntegrantes] = useState([]);
