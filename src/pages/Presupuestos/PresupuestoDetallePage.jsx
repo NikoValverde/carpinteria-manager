@@ -86,8 +86,6 @@ function PresupuestoDetallePage() {
     try {
       const data = await obtenerMateriales();
 
-      console.log("DATA:", data);
-
       setMaterialesCatalogo(data);
     } catch (error) {
       console.error("ERROR:", error);
@@ -134,7 +132,6 @@ function seleccionarMaterial(material) {
 }
 
 useEffect(() => {
-  console.log(materialSeleccionado);
 }, [materialSeleccionado]);
 
   async function cargarIntegrantes() {
@@ -157,9 +154,9 @@ useEffect(() => {
     }
   }
 
+  
   useEffect(() => {
     const fetchData = async () => {
-      console.log(materialesCatalogo);
       await cargarMaterialesPresupuesto();
       await cargarCatalogoMateriales();
       await cargarIntegrantes();
@@ -471,19 +468,38 @@ useEffect(() => {
 
         precio_trabajo: precioTrabajoActualizado,
       });
-      // actualiza el estado en React
-      setPresupuesto((prev) => ({
-        ...prev,
-        costo_materiales: costoMaterialesActualizado,
-        costo_mano_obra: costoManoObraActualizado,
-        costo_total: costoTotalActualizado,
-        monto_ganancia: montoGananciaActualizado,
-        precio_trabajo: precioTrabajoActualizado,
-      }));
     } catch (error) {
       console.error(error);
     }
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+    await cargarMaterialesPresupuesto();
+    await cargarCatalogoMateriales();
+    await cargarIntegrantes();
+    await cargarManoObra();
+    try {
+      const data = await obtenerPresupuestoPorId(id);
+
+      setPresupuesto(data);
+      setPrecioFinal(data.precio_final || "");
+      setFlete(data.flete || 0);
+      setPorcentajeGanancia(data.porcentaje_ganancia || 35);
+      setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
+      setDescripcion(data.descripcion || "");
+      setObservaciones(data.observaciones || "");
+      setNotasInternas(data.notas_internas || "");
+      setOpcionales(data.opcionales || "");
+      setPrecioOpcional(data.precio_opcional || 0);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  fetchData();
+}, [id]); // ⬅️ Cierre correcto del useEffect
+  
 
   async function guardarDescripcion() {
     try {

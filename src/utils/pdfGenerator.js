@@ -1,5 +1,18 @@
 import jsPDF from "jspdf";
 
+// ---- Paleta de colores institucional (únicos colores permitidos) ----
+const COLOR_GRIS_OSCURO = [44, 52, 64];
+const COLOR_GRIS_BORDE = [170, 170, 170];
+const COLOR_BLANCO = [255, 255, 255];
+const COLOR_NEGRO = [0, 0, 0];
+const COLOR_NARANJA = [234, 88, 12];
+
+// Helper de formato visual de precios: unifica "$ " + separador de miles.
+// Solo cambia el TEXTO mostrado, nunca el valor numérico ni los cálculos.
+function formatearPrecio(valor) {
+  return `$ ${Number(valor || 0).toLocaleString("es-AR")}`;
+}
+
 // Función auxiliar: convierte una imagen cargada por fetch a base64
 async function obtenerLogoBase64() {
   const response = await fetch("/logo-valverde.png");
@@ -21,24 +34,80 @@ async function obtenerLogoBase64() {
   });
 }
 
-// Función auxiliar para dibujar un recuadro con título centrado y texto adentro
+// Íconos vectoriales mínimos para el footer. Son formas GENÉRICAS y
+// abstractas (no reproducen el logo real de WhatsApp ni de ningún sitio),
+// dibujadas con primitivas nativas de jsPDF para que siempre se vean
+// nítidas sin depender de fuentes/emoji.
+function dibujarIconoChat(doc, x, y, ancho, alto) {
+  doc.setFillColor(...COLOR_BLANCO);
+  doc.roundedRect(x, y, ancho, alto, 0.4, 0.4, "F");
+  doc.triangle(
+    x + ancho * 0.2,
+    y + alto,
+    x + ancho * 0.5,
+    y + alto,
+    x + ancho * 0.2,
+    y + alto + 0.9,
+    "F",
+  );
+}
+
+function dibujarIconoGlobo(doc, cx, cy, r) {
+  doc.setDrawColor(...COLOR_BLANCO);
+  doc.setLineWidth(0.25);
+  doc.circle(cx, cy, r, "S");
+  doc.ellipse(cx, cy, r * 0.45, r, "S");
+  doc.line(cx - r, cy, cx + r, cy);
+  doc.setDrawColor(...COLOR_NEGRO);
+}
+
+// Función auxiliar para dibujar un recuadro con barra de título (gris
+// oscuro, texto blanco) y cuerpo de texto en negro, alineado a la
+// izquierda (sin justificar). Se usa tanto para "DETALLES DE
+// CONSTRUCCIÓN" como para "OPCIONALES": ambas deben verse exactamente
+// igual, por eso no recibe ningún parámetro de color.
 function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
+  const altoBarraTitulo = 6;
+  const lineHeightFactor = 1.5;
+
+  // Barra de título: fondo gris oscuro, texto blanco
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  doc.rect(x, y, ancho, altoBarraTitulo, "F");
+
   doc.setFontSize(10);
   doc.setFont(undefined, "bold");
-  doc.text(titulo, x + ancho / 2, y + 6, { align: "center" });
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text(titulo, x + ancho / 2, y + altoBarraTitulo / 2 + 1.5, {
+    align: "center",
+  });
+
+  // Cuerpo del texto: caja blanca (sin fondo), texto negro, alineado a la
+  // izquierda (nunca justificado).
   doc.setFont(undefined, "normal");
-
-  doc.line(x, y + 9, x + ancho, y + 9);
-
   doc.setFontSize(fontSizeTexto);
+  doc.setTextColor(...COLOR_NEGRO);
 
   const lineas = doc.splitTextToSize(texto || "", ancho - 8);
 
-  doc.text(lineas, x + 4, y + 15, { lineHeightFactor: 1.15 });
+  doc.text(lineas, x + 4, y + altoBarraTitulo + 5, {
+    lineHeightFactor,
+    align: "left",
+    maxWidth: ancho - 8,
+  });
 
-  const altoTexto = lineas.length * (fontSizeTexto / 2.2) + 19;
+  // Alto del texto en base al tamaño de fuente real y el interlineado 1.5
+  // (no se tocó la lógica de splitTextToSize, solo el cálculo de alto que
+  // depende del tamaño de fuente para que la caja no quede corta; se
+  // ajustó 1mm respecto a la versión anterior para achicar espacio
+  // sobrante, en línea con "reducir espacios innecesarios").
+  const altoLineaMM = fontSizeTexto * 0.3528 * lineHeightFactor; // pt → mm
+  const altoTexto = lineas.length * altoLineaMM + altoBarraTitulo + 9;
 
+  // Borde general fino en gris
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.2);
   doc.rect(x, y, ancho, altoTexto);
+  doc.setDrawColor(...COLOR_NEGRO);
 
   return y + altoTexto;
 }
@@ -62,6 +131,8 @@ export async function generarPDF({
   let y = margen;
 
   // ENCABEZADO (logo + "Presupuesto" ya incluido en la imagen)
+  // Se mantiene exactamente igual: mismo logo, mismo banner, mismo tamaño,
+  // y queda prácticamente unido a la tabla de cliente (0mm de separación).
 
   const altoLogo = (399 / 1774) * anchoUtil * 0.85; // ≈ 18mm con anchoUtil de 180mm
 
@@ -73,71 +144,116 @@ export async function generarPDF({
   }
 
   y += altoLogo;
+  doc.setDrawColor(...COLOR_NEGRO);
   doc.rect(margen, margen, anchoUtil, altoLogo);
 
-  y += 4;
-
-  // RECUADRO CLIENTE / CONTACTO / FECHA / VALIDEZ (unificado, sin espacio entre filas)
-
-  const anchoMitad = anchoUtil / 2;
-  const altoFila = 6;
-  const altoTotalDatos = altoFila * 4;
-
-  doc.rect(margen, y, anchoUtil, altoTotalDatos);
-  doc.line(margen + anchoMitad, y, margen + anchoMitad, y + altoTotalDatos);
-  doc.line(margen, y + altoFila, margen + anchoUtil, y + altoFila);
-  doc.line(margen, y + altoFila * 2, margen + anchoUtil, y + altoFila * 2);
-  doc.line(margen, y + altoFila * 3, margen + anchoUtil, y + altoFila * 3);
-
-  doc.setFontSize(8);
-  doc.setFont(undefined, "bold");
-  doc.text("CLIENTE", margen + 3, y + 4);
-  doc.text("CONTACTO", margen + anchoMitad + 3, y + 4);
-
-  doc.setFont(undefined, "normal");
-  doc.setFontSize(9);
-  doc.text(presupuesto.clientes?.nombre || "", margen + 3, y + altoFila + 4);
-  doc.text(
-    presupuesto.clientes?.telefono || "-",
-    margen + anchoMitad + 3,
-    y + altoFila + 4,
-  );
+  // RECUADRO CLIENTE / CONTACTO / DIRECCIÓN / E-MAIL / FECHA / VALIDEZ
+  const cliente = String(presupuesto.clientes?.nombre ?? "-");
+  const telefono = String(presupuesto.clientes?.telefono ?? "-");
+  const direccion = String(presupuesto.clientes?.direccion ?? "-");
+  const email = String(presupuesto.clientes?.email ?? "-");
 
   const fechaActual = new Date();
   const fechaValidez = new Date(fechaActual);
   fechaValidez.setDate(fechaValidez.getDate() + 15);
 
-  doc.setFontSize(8);
-  doc.setFont(undefined, "bold");
-  doc.text("FECHA", margen + 3, y + altoFila * 2 + 4);
-  doc.text("VALIDEZ", margen + anchoMitad + 3, y + altoFila * 2 + 4);
+  const filasDatosCliente = [
+    {
+      izquierda: {
+        label: "CLIENTE",
+        valor: cliente,
+      },
+      derecha: {
+        label: "CONTACTO",
+        valor: telefono,
+      },
+    },
+    {
+      izquierda: {
+        label: "DIRECCIÓN",
+        valor: direccion,
+      },
+      derecha: {
+        label: "E-MAIL",
+        valor: email,
+      },
+    },
+    {
+      izquierda: {
+        label: "FECHA",
+        valor: fechaActual.toLocaleDateString("es-AR"),
+      },
+      derecha: {
+        label: "VALIDEZ",
+        valor: fechaValidez.toLocaleDateString("es-AR"),
+      },
+    },
+  ];
 
-  doc.setFont(undefined, "normal");
-  doc.setFontSize(9);
-  doc.text(
-    fechaActual.toLocaleDateString("es-AR"),
-    margen + 3,
-    y + altoFila * 3 + 4,
-  );
-  doc.text(
-    fechaValidez.toLocaleDateString("es-AR"),
-    margen + anchoMitad + 3,
-    y + altoFila * 3 + 4,
-  );
+  const anchoMitad = anchoUtil / 2;
+  const altoFila = 5.5; // antes 6mm, ligeramente más bajo
+  const cantidadFilas = filasDatosCliente.length * 2; // 1 fila de etiqueta + 1 de dato por par
+  const altoTotalDatos = altoFila * cantidadFilas;
 
-  y += altoTotalDatos + 4;
+  // Fondo gris oscuro SOLO en las filas de etiqueta (los valores quedan en blanco)
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  filasDatosCliente.forEach((_, indice) => {
+    const yFilaEtiqueta = y + indice * altoFila * 2;
+    doc.rect(margen, yFilaEtiqueta, anchoUtil, altoFila, "F");
+  });
 
-  // TÍTULO DEL TRABAJO
+  // Borde general y divisores en gris fino
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.2);
+  doc.rect(margen, y, anchoUtil, altoTotalDatos);
+  doc.line(margen + anchoMitad, y, margen + anchoMitad, y + altoTotalDatos);
+  for (let i = 1; i < cantidadFilas; i++) {
+    doc.line(margen, y + altoFila * i, margen + anchoUtil, y + altoFila * i);
+  }
+  doc.setDrawColor(...COLOR_NEGRO);
+
+  // Texto: etiquetas en blanco sobre fondo oscuro, datos en negro sobre blanco
+  filasDatosCliente.forEach((fila, indice) => {
+    const yEtiqueta = y + indice * altoFila * 2;
+    const yDato = yEtiqueta + altoFila;
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_BLANCO);
+    doc.text(fila.izquierda.label, margen + 3, yEtiqueta + 3.8);
+    doc.text(fila.derecha.label, margen + anchoMitad + 3, yEtiqueta + 3.8);
+
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...COLOR_NEGRO);
+    doc.text(fila.izquierda.valor, margen + 3, yDato + 3.8);
+    doc.text(fila.derecha.valor, margen + anchoMitad + 3, yDato + 3.8);
+  });
+
+  doc.setTextColor(...COLOR_NEGRO);
+
+  y += altoTotalDatos + 3; // tabla cliente → título del trabajo (antes 4mm)
+
+  // TÍTULO DEL TRABAJO (una sola barra horizontal, baja y sin líneas decorativas)
+
+  const altoTitulo = 8;
+
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  doc.rect(margen, y, anchoUtil, altoTitulo, "F");
 
   doc.setFontSize(12);
   doc.setFont(undefined, "bold");
-  doc.text((presupuesto.titulo || "").toUpperCase(), anchoHoja / 2, y + 7, {
-    align: "center",
-  });
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text(
+    (presupuesto.titulo || "").toUpperCase(),
+    anchoHoja / 2,
+    y + altoTitulo / 2 + 1.5,
+    { align: "center" },
+  );
   doc.setFont(undefined, "normal");
-  doc.rect(margen, y, anchoUtil, 11);
+  doc.setTextColor(...COLOR_NEGRO);
 
-  y += 11 + 4;
+  y += altoTitulo + 3; // título → detalle de construcción
 
   // DETALLE DE CONSTRUCCIÓN
 
@@ -146,11 +262,11 @@ export async function generarPDF({
     margen,
     y,
     anchoUtil,
-    "DETALLE DE CONSTRUCCIÓN",
+    "DETALLES DE CONSTRUCCIÓN",
     descripcion,
   );
 
-  y += 4;
+  y += 3; // detalle → opcionales (o → total, si no hay opcionales)
 
   // OBSERVACIONES
 
@@ -166,95 +282,148 @@ export async function generarPDF({
   y += 4;
 }*/
 
-  // OPCIONALES (solo el texto descriptivo, sin los montos)
+  // OPCIONALES (mismo diseño exacto que "DETALLES DE CONSTRUCCIÓN", sin acento naranja)
 
   if (opcionales?.trim()) {
     y = dibujarCaja(doc, margen, y, anchoUtil, "OPCIONALES", opcionales);
-    y += 2;
+    y += 3; // opcionales → total
   }
 
-  // TOTAL PRESUPUESTADO (incluye Valor Opcional y Total con Opcional si corresponde)
+  // TOTAL PRESUPUESTADO (caja blanca, barra gris oscuro, único elemento naranja: el precio principal)
+
+  const altoBarraTotal = 7;
+
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  doc.rect(margen, y, anchoUtil, altoBarraTotal, "F");
 
   doc.setFontSize(10);
   doc.setFont(undefined, "bold");
-  doc.text("TOTAL PRESUPUESTADO", anchoHoja / 2, y + 6, { align: "center" });
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text("TOTAL PRESUPUESTADO", anchoHoja / 2, y + altoBarraTotal / 2 + 1.5, {
+    align: "center",
+  });
   doc.setFont(undefined, "normal");
-  doc.line(margen, y + 9, margen + anchoUtil, y + 9);
 
-  doc.setFontSize(16);
+  doc.setFontSize(17);
   doc.setFont(undefined, "bold");
-
-  doc.text(
-    `$${Number(precioFinal || 0).toLocaleString("es-AR")}`,
-    anchoHoja / 2,
-    y + 18,
-    {
-      align: "center",
-    },
-  );
-
+  doc.setTextColor(...COLOR_NARANJA);
+  doc.text(formatearPrecio(precioFinal), anchoHoja / 2, y + altoBarraTotal + 10, {
+    align: "center",
+  });
   doc.setFont(undefined, "normal");
+  doc.setTextColor(...COLOR_NEGRO);
 
-  let altoCajaTotal = 24;
+  let altoCajaTotal = altoBarraTotal + 17;
 
   if (opcionales?.trim()) {
-    doc.line(margen + 20, y + 24, margen + anchoUtil - 20, y + 24);
+    doc.setDrawColor(...COLOR_GRIS_BORDE);
+    doc.line(margen + 20, y + 23, margen + anchoUtil - 20, y + 23);
 
     doc.setFontSize(9);
+    doc.setTextColor(...COLOR_NEGRO);
 
     doc.text(
-      `Valor Opcional: $${Number(precioOpcional || 0).toLocaleString(
-        "es-AR",
-      )}`,
+      `Valor Opcional: ${formatearPrecio(precioOpcional)}`,
       anchoHoja / 2,
-      y + 31,
-      {
-        align: "center",
-      },
+      y + 29,
+      { align: "center" },
     );
 
     doc.setFont(undefined, "bold");
 
-    doc.text(`TOTAL CON OPCIONAL`, anchoHoja / 2, y + 38, {
+    doc.text("TOTAL CON OPCIONAL", anchoHoja / 2, y + 36, {
       align: "center",
     });
 
     doc.setFontSize(12);
 
-    doc.text(
-      `$${Number(totalConOpcional || 0).toLocaleString("es-AR")}`,
-      anchoHoja / 2,
-      y + 45,
-      {
-        align: "center",
-      },
-    );
+    doc.text(formatearPrecio(totalConOpcional), anchoHoja / 2, y + 43, {
+      align: "center",
+    });
 
     doc.setFont(undefined, "normal");
 
-    altoCajaTotal = 50;
+    altoCajaTotal = 47;
   }
 
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.2);
   doc.rect(margen, y, anchoUtil, altoCajaTotal);
+  doc.setDrawColor(...COLOR_NEGRO);
+  doc.setTextColor(...COLOR_NEGRO);
 
-  y += altoCajaTotal + 4;
+  y += altoCajaTotal + 3; // total → footer
 
-  // PIE DE PÁGINA (una sola línea)
+  // PIE DE PÁGINA: fondo gris oscuro, 3 bloques (Empresa | WhatsApp | Web)
+  // separados por líneas verticales finas, con íconos chicos y genéricos.
 
+  const altoFooter = 10;
+
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  doc.rect(margen, y, anchoUtil, altoFooter, "F");
+
+  const col1Ancho = anchoUtil * 0.4;
+  const col2Ancho = anchoUtil * 0.28;
+  const divisor1X = margen + col1Ancho;
+  const divisor2X = margen + col1Ancho + col2Ancho;
+
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.2);
+  doc.line(divisor1X, y + 1.5, divisor1X, y + altoFooter - 1.5);
+  doc.line(divisor2X, y + 1.5, divisor2X, y + altoFooter - 1.5);
+  doc.setDrawColor(...COLOR_NEGRO);
+
+  const baseLineFooter = y + altoFooter / 2 + 1.5;
+
+  // Nombre de la empresa (izquierda)
   doc.setFontSize(8);
   doc.setFont(undefined, "bold");
-  doc.text("CARPINTERÍA Y HERRERÍA VALVERDE", margen + 4, y + 7);
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text("CARPINTERÍA Y HERRERÍA VALVERDE", margen + 4, baseLineFooter);
+
+  // WhatsApp (centro), con ícono de "globo de chat" genérico
   doc.setFont(undefined, "normal");
+  doc.setFontSize(8);
+  const textoWhatsapp = "WhatsApp: +54 9 11 3638-5790";
+  const anchoTextoWhatsapp = doc.getTextWidth(textoWhatsapp);
+  const anchoIconoChat = 2.6;
+  const espacioIconoTexto = 1.3;
+  const centroCol2 = margen + col1Ancho + col2Ancho / 2;
+  const inicioBloqueWhatsapp =
+    centroCol2 - (anchoIconoChat + espacioIconoTexto + anchoTextoWhatsapp) / 2;
+
+  dibujarIconoChat(
+    doc,
+    inicioBloqueWhatsapp,
+    y + altoFooter / 2 - 1.6,
+    anchoIconoChat,
+    2,
+  );
+  doc.setTextColor(...COLOR_BLANCO);
   doc.text(
-    "WhatsApp: +54 9 11 3638-5790   |   www.carpinteriavalverde.com.ar/",
-    anchoUtil + margen - 4,
-    y + 7,
-    { align: "right" },
+    textoWhatsapp,
+    inicioBloqueWhatsapp + anchoIconoChat + espacioIconoTexto,
+    baseLineFooter,
   );
 
-  doc.rect(margen, y, anchoUtil, 11);
+  // Sitio web (derecha), con ícono de "globo" genérico
+  const textoWeb = "www.carpinteriavalverde.com.ar";
+  const anchoTextoWeb = doc.getTextWidth(textoWeb);
+  const finBloqueWeb = margen + anchoUtil - 4;
+  const inicioTextoWeb = finBloqueWeb - anchoTextoWeb;
+  const radioGlobo = 1.3;
 
-  y += 11;
+  dibujarIconoGlobo(
+    doc,
+    inicioTextoWeb - radioGlobo - 1.5,
+    y + altoFooter / 2,
+    radioGlobo,
+  );
+  doc.text(textoWeb, inicioTextoWeb, baseLineFooter);
+
+  doc.setTextColor(...COLOR_NEGRO);
+
+  y += altoFooter;
 
   console.log("y final:", y, "alto hoja A4:", 297);
 

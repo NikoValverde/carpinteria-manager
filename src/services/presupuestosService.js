@@ -37,7 +37,13 @@ export async function obtenerPresupuestoPorId(id) {
     .select(
       `
       *,
-      clientes(nombre)
+      clientes(
+        id,
+        nombre,
+        telefono,
+        email,
+        direccion
+      )
     `,
     )
     .eq("id", id)
