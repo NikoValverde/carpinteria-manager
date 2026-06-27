@@ -1,10 +1,10 @@
-import { systemPrompt } from "./systemPrompt";
-import { styleGuide } from "./styleGuide";
-import { improvePrompt } from "./improvePrompt";
-import { generatePrompt } from "./generatePrompt";
+import { systemPrompt } from "./systemPrompt.ts";
+import { styleGuide } from "./styleGuide.ts";
+import { improvePrompt } from "./improvePrompt.ts";
+import { generatePrompt } from "./generatePrompt.ts";
 
-import type { PromptContext } from "../types/promptContext";
-import type { PromptRequest } from "../types/promptRequest";
+import type { PromptContext } from "../types/promptContext.ts";
+import type { PromptRequest } from "../types/promptRequest.ts";
 
 export function buildPrompt(context: PromptContext): PromptRequest {
   switch (context.mode) {

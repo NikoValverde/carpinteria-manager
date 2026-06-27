@@ -6,6 +6,9 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 
+import { buildPrompt } from "./prompts/promptBuilder.ts";
+import type { PromptContext } from "./types/promptContext.ts";
+
 console.log("Hello from Functions!");
 
 // This endpoint uses 'publishable' | 'secret' access, apiKey is required.
@@ -26,11 +29,17 @@ export default {
     }
     */
 
+    const context: PromptContext = {
+      mode: "improve",
+      textoOriginal:
+        "hacer estructura de caño 30x30 con melamina blanca 18mm y poner bisagras hafele",
+    };
+
+    const prompt = buildPrompt(context);
+
     return Response.json({
       success: true,
-      service: "writing-assistant",
-      version: "1.0.0",
-      message: "Asistente de Redacción operativo.",
+      prompt,
     });
   }),
 };

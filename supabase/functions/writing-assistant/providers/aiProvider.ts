@@ -1,5 +1,7 @@
-export interface AIProvider {
-  improveText(prompt: string): Promise<string>;
+import type { ProviderResponse } from "../types/providerResponse.ts";
 
-  generateDescription(prompt: string): Promise<string>;
+export interface AIProvider {
+  improveText(prompt: string): Promise<ProviderResponse>;
+
+  generateDescription(prompt: string): Promise<ProviderResponse>;
 }
