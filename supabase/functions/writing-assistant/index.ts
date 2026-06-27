@@ -8,6 +8,7 @@ import { withSupabase } from "@supabase/server";
 
 import { buildPrompt } from "./prompts/promptBuilder.ts";
 import type { PromptContext } from "./types/promptContext.ts";
+import { getProvider } from "./providers/providerFactory.ts";
 
 console.log("Hello from Functions!");
 
@@ -29,18 +30,57 @@ export default {
     }
     */
 
-    const context: PromptContext = {
-      mode: "improve",
-      textoOriginal:
-        "hacer estructura de caño 30x30 con melamina blanca 18mm y poner bisagras hafele",
-    };
+    const context = (await req.json()) as PromptContext;
+    if (!context.mode) {
+      return Response.json(
+        {
+          success: false,
+          error: "El modo es obligatorio.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (context.mode === "improve" && !context.textoOriginal?.trim()) {
+      return Response.json(
+        {
+          success: false,
+          error: "El texto original es obligatorio para mejorar.",
+        },
+        { status: 400 },
+      );
+    }
 
     const prompt = buildPrompt(context);
 
-    return Response.json({
-      success: true,
-      prompt,
-    });
+    const provider = getProvider();
+
+    let response;
+
+    switch (context.mode) {
+      case "improve":
+        response = await provider.improveText(
+          `${prompt.system}\n\n${prompt.user}`,
+        );
+        break;
+
+      case "generate":
+        response = await provider.generateDescription(
+          `${prompt.system}\n\n${prompt.user}`,
+        );
+        break;
+
+      default:
+        return Response.json(
+          {
+            success: false,
+            error: "Modo no soportado.",
+          },
+          { status: 400 },
+        );
+    }
+
+    return Response.json(response);
   }),
 };
 
