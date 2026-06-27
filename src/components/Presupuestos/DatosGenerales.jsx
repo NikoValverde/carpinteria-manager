@@ -1,5 +1,7 @@
 import SectionCard from "../ui/SectionCard";
+import WritingAssistant from "./WritingAssistant";
 import { ClipboardList, Tag, User } from "lucide-react";
+
 
 function DatosGenerales({
   presupuesto,
@@ -10,6 +12,8 @@ function DatosGenerales({
   setObservaciones,
   guardarObservaciones,
 }) {
+
+
   return (
     <SectionCard
       title={
@@ -114,6 +118,11 @@ function DatosGenerales({
             onBlur={guardarDescripcion}
             placeholder="Describa el trabajo a realizar..."
             className="min-h-[320px] w-full resize-none overflow-y-auto rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+          />
+          <WritingAssistant
+            descripcion={descripcion}
+            setDescripcion={setDescripcion}
+            presupuesto={presupuesto}
           />
         </div>
 

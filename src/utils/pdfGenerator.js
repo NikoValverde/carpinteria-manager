@@ -425,7 +425,5 @@ export async function generarPDF({
 
   y += altoFooter;
 
-  console.log("y final:", y, "alto hoja A4:", 297);
-
   doc.save(`${presupuesto.numero}.pdf`);
 }

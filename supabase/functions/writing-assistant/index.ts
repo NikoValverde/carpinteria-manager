@@ -10,8 +10,6 @@ import { buildPrompt } from "./prompts/promptBuilder.ts";
 import type { PromptContext } from "./types/promptContext.ts";
 import { getProvider } from "./providers/providerFactory.ts";
 
-console.log("Hello from Functions!");
-
 // This endpoint uses 'publishable' | 'secret' access, apiKey is required.
 // Use publishable for Client-facing, key-validated endpoints
 // Use secret for Server-to-server, internal calls
