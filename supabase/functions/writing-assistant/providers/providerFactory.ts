@@ -1,6 +1,6 @@
 import type { AIProvider } from "./aiProvider.ts";
-import { FakeProvider } from "./fakeProvider.ts";
+import { GeminiProvider } from "./GeminiProvider.ts";
 
 export function getProvider(): AIProvider {
-  return new FakeProvider();
+  return new GeminiProvider();
 }
