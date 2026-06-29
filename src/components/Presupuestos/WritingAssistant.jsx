@@ -19,6 +19,18 @@ export default function WritingAssistant({
 
   const handleImprove = async () => {
     try {
+      const texto = descripcion.trim();
+
+      if (!texto) {
+        alert("No hay texto para mejorar.");
+        return;
+      }
+
+      if (texto.length < 15) {
+        alert("El texto es demasiado corto para mejorarlo.");
+        return;
+      }
+
       setMode("improve");
 
       setProposal("");
@@ -33,9 +45,9 @@ export default function WritingAssistant({
 
       setProposal(proposal);
     } catch (error) {
-      console.error(error);
-
       setOpen(false);
+
+      alert(error.message || "Ocurrió un error inesperado.");
     } finally {
       setLoading(false);
     }
@@ -43,6 +55,16 @@ export default function WritingAssistant({
 
   const handleGenerate = async () => {
     try {
+      if (!presupuesto.titulo?.trim()) {
+        alert("El presupuesto debe tener un título.");
+        return;
+      }
+
+      if (!presupuesto.categoria_trabajo?.trim()) {
+        alert("Debe seleccionar una categoría de trabajo.");
+        return;
+      }
+
       setMode("generate");
 
       setProposal("");
