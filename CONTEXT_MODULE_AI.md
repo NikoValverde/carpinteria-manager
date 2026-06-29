@@ -378,3 +378,141 @@ La IA no reemplaza al profesional.
 La IA acelera la redacción.
 
 La decisión técnica siempre pertenece al usuario.
+
+---
+
+## Estado actual
+
+El módulo de asistencia por IA se encuentra funcional e integrado con Gemini mediante una Supabase Edge Function (`writing-assistant`).
+
+Actualmente soporta dos modos de funcionamiento:
+
+- **Mejorar texto** (`mode: improve`)
+  - Mejora la redacción técnica del texto existente.
+  - Nunca modifica medidas, materiales o información técnica.
+  - Mantiene el estilo definido en `STYLE_GUIDE.md`.
+
+- **Generar descripción** (`mode: generate`)
+  - Genera una descripción técnica desde la información disponible del presupuesto.
+  - Actualmente utiliza:
+    - título
+    - categoría
+    - observaciones
+  - Próximamente se enriquecerá con materiales, mano de obra y demás contexto del presupuesto.
+
+---
+
+## Arquitectura
+
+Frontend
+
+```
+WritingAssistant.jsx
+        │
+        ▼
+writingAssistantService.js
+        │
+        ▼
+Supabase Edge Function
+        │
+        ▼
+ContextGuardian
+        │
+        ▼
+PromptBuilder
+        │
+        ▼
+GeminiProvider
+        │
+        ▼
+Gemini API
+```
+
+---
+
+## ContextGuardian
+
+El módulo posee una capa de validación previa para evitar llamadas innecesarias a Gemini.
+
+Actualmente implementa:
+
+- `validateLength()`
+  - Texto vacío.
+  - Longitud mínima.
+
+- `validateDomain()`
+  - Verifica que el contenido pertenezca al dominio de carpintería/herrería mediante un diccionario de términos.
+
+- `validateIntent()`
+  - Rechaza preguntas o consultas generales.
+  - El asistente únicamente redacta descripciones técnicas de presupuestos.
+
+- `validateGenerateContext()`
+  - Stub para futuras validaciones.
+
+- `validatePromptInjection()`
+  - Stub para futuras protecciones.
+
+---
+
+## Contrato Backend
+
+Respuesta exitosa
+
+```json
+{
+  "success": true,
+  "text": "..."
+}
+```
+
+Respuesta con error
+
+```json
+{
+  "success": false,
+  "error": "..."
+}
+```
+
+---
+
+## Validaciones Frontend
+
+Antes de invocar la Edge Function se valida:
+
+- texto vacío
+- longitud mínima
+- datos mínimos para generar descripción
+
+Esto evita llamadas innecesarias a la IA y mejora la experiencia del usuario.
+
+---
+
+## Objetivos próximos
+
+### Sprint 10
+
+- Enriquecer el contexto enviado a Gemini.
+- Incluir materiales del presupuesto.
+- Incluir terminaciones.
+- Incluir mano de obra.
+- Mejorar la calidad de las descripciones generadas.
+
+### Sprint 11
+
+- Protección contra Prompt Injection.
+- Rate Limiting.
+- Sistema de puntuación (scoring) para validar contexto.
+- Hardening general del módulo para producción.
+
+---
+
+## Principios del módulo
+
+- La IA nunca debe inventar información técnica.
+- La IA no responde preguntas generales.
+- La IA no actúa como chatbot.
+- La IA únicamente asiste en la redacción de presupuestos de carpintería y herrería.
+- Toda validación crítica debe realizarse en el backend.
+- El frontend solo implementa validaciones de UX.
