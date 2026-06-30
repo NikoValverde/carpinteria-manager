@@ -473,7 +473,7 @@ useEffect(() => {
     }
   }
 
-  // 
+  
   useEffect(() => {
     const fetchData = async () => {
     await cargarMaterialesPresupuesto();
@@ -499,7 +499,7 @@ useEffect(() => {
   };
 
   fetchData();
-}, [id]); // ⬅️ Cierre correcto del useEffect
+}, [id]); // ⬅ Cierre correcto del useEffect
   
 
   async function guardarDescripcion() {
@@ -564,7 +564,6 @@ useEffect(() => {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
         {/* COLUMNA IZQUIERDA */}
         <div className="space-y-6">
-
           {/*COMPONENTES DE DATOS GENERALES, OPCIONALES Y NOTAS, MATERIALES Y MANO DE OBRA*/}
           <DatosGenerales
             presupuesto={presupuesto}
@@ -574,6 +573,7 @@ useEffect(() => {
             observaciones={observaciones}
             setObservaciones={setObservaciones}
             guardarObservaciones={guardarObservaciones}
+            materiales={materialesPresupuesto}
           />
 
           <OpcionalesNotas

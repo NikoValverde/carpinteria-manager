@@ -1,13 +1,19 @@
 export type PromptMode = "improve" | "generate";
 
+export interface MaterialIA {
+  nombre: string;
+  cantidad: number;
+  unidad: string;
+}
+
 export interface PromptContext {
-  mode: PromptMode;
+  mode: "improve" | "generate";
 
   titulo?: string;
   categoria?: string;
-
-  materiales?: string[];
   observaciones?: string;
+
+  materiales?: MaterialIA[];
 
   textoOriginal?: string;
 }

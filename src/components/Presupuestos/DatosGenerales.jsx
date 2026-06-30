@@ -11,6 +11,7 @@ function DatosGenerales({
   observaciones,
   setObservaciones,
   guardarObservaciones,
+  materiales,
 }) {
 
 
@@ -123,6 +124,7 @@ function DatosGenerales({
             descripcion={descripcion}
             setDescripcion={setDescripcion}
             presupuesto={presupuesto}
+            materiales={materiales}
           />
         </div>
 

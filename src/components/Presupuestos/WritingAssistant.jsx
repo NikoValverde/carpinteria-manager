@@ -10,6 +10,7 @@ export default function WritingAssistant({
   descripcion,
   presupuesto,
   setDescripcion,
+  materiales,
 }) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -73,10 +74,17 @@ export default function WritingAssistant({
 
       setOpen(true);
 
+      const materialesIA = materiales.map((material) => ({
+        nombre: material.material_nombre,
+        cantidad: material.cantidad,
+        unidad: material.unidad,
+      }));
+
       const proposal = await generateDescription({
         titulo: presupuesto.titulo,
         categoria: presupuesto.categoria_trabajo,
         observaciones: presupuesto.observaciones,
+        materiales: materialesIA,
       });
 
       setProposal(proposal);
