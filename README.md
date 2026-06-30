@@ -1,16 +1,39 @@
-# React + Vite
+Carpintería Manager
+Carpintería Manager es una aplicación SaaS diseñada para digitalizar el flujo de trabajo de carpinterías y herrerías pequeñas y medianas.
+Permite gestionar clientes, materiales, integrantes, presupuestos y mano de obra, con cálculos automáticos de costos y generación de PDFs profesionales.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Características principales
+Gestión completa de clientes, materiales, integrantes y presupuestos.
 
-Currently, two official plugins are available:
+Cálculo automático de costos, mano de obra, consumibles e imprevistos.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Generación de PDFs profesionales listos para compartir con clientes.
 
-## React Compiler
+UI moderna y responsive, inspirada en SaaS actuales (Linear, Vercel).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Autenticación segura con Supabase Auth y Row Level Security.
 
-## Expanding the ESLint configuration
+Dark mode y componentes reutilizables con Tailwind CSS.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Módulo de IA
+Incluye un asistente de redacción técnica integrado con la API de Google Gemini, desarrollado en TypeScript y conectado mediante Supabase Edge Functions.
+
+Funciones principales:
+
+Mejorar texto: optimiza redacción manteniendo datos técnicos intactos.
+
+Generar descripción: crea descripciones profesionales a partir de la información del presupuesto.
+
+La IA nunca inventa medidas, materiales ni costos. Su objetivo es acelerar la redacción y mantener un estilo uniforme.
+
+Stack Tecnológico
+Frontend: React + Vite + TypeScript + Tailwind CSS + Lucide React
+
+Backend: Supabase + PostgreSQL + Edge Functions
+
+IA: Google Gemini API + validaciones de contexto
+
+Utilidades: jsPDF para exportar presupuestos
+
+Objetivo
+Convertir Carpintería Manager en un producto SaaS comercial que optimice la gestión y el seguimiento de presupuestos en carpinterías y herrerías.
