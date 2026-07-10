@@ -28,6 +28,7 @@ function ResumenFinanciero({
   totalConOpcional,
   guardarResumenFinanciero,
   aplicarPrecioFinal,
+  alternativas,
 }) {
   // Proporciones visuales de la barra de distribución de costos.
   // Es un valor puramente de presentación derivado de los props existentes;
@@ -290,18 +291,51 @@ function ResumenFinanciero({
           </div>
         </div>
 
+        {/* Alternativas de Trabajo */}
+        {alternativas.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {}}
+            className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 text-left shadow-sm transition-colors hover:bg-blue-100/70 dark:hover:bg-blue-950/40"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                <Layers
+                  size={18}
+                  className="text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  Alternativas de Trabajo
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {alternativas.length}{" "}
+                  {alternativas.length === 1
+                    ? "alternativa disponible"
+                    : "alternativas disponibles"}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+              Administrar →
+            </span>
+          </button>
+        )}
+
         {/* Advertencia: precio desactualizado */}
         {precioDesactualizado && (
-          <div className="flex items-start gap-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-4">
+          <div className="flex items-start gap-3 rounded-lg border border-yellow-400 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 p-4">
             <AlertTriangle
               size={18}
-              className="mt-0.5 shrink-0 text-amber-500"
+              className="mt-0.5 shrink-0 text-yellow-600"
             />
             <div>
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
                 El Precio Final fue modificado o quedó desactualizado.
               </p>
-              <p className="text-sm text-amber-600 dark:text-amber-500">
+              <p className="text-sm text-yellow-600 dark:text-yellow-500">
                 Diferencia: {diferenciaPrecio > 0 ? "+" : "-"}$
                 {Math.abs(diferenciaPrecio).toLocaleString("es-AR")}
               </p>
