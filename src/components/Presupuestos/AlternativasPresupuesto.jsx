@@ -15,8 +15,6 @@ export default function AlternativasPresupuesto({
   presupuestoId,
   alternativas,
   setAlternativas,
-  open,
-  onOpenChange,
 }) {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [alternativaEditando, setAlternativaEditando] = useState(null);

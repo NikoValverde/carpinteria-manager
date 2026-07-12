@@ -296,20 +296,21 @@ function ResumenFinanciero({
           <button
             type="button"
             onClick={() => {}}
-            className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 text-left shadow-sm transition-colors hover:bg-blue-100/70 dark:hover:bg-blue-950/40"
+            className="flex w-full cursor-pointer flex-col gap-1 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 text-left shadow-sm transition-colors hover:bg-blue-100/70 dark:hover:bg-blue-950/40"
           >
-            <div className="flex items-center gap-3">
+            {/* Encabezado */}
+            <div className="flex w-full items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
                 <Layers
                   size={18}
                   className="text-blue-600 dark:text-blue-400"
                 />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="flex flex-col">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                   Alternativas de Trabajo
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                   {alternativas.length}{" "}
                   {alternativas.length === 1
                     ? "alternativa disponible"
@@ -318,9 +319,12 @@ function ResumenFinanciero({
               </div>
             </div>
 
-            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-              Administrar →
-            </span>
+            {/* Botón de acción */}
+            <div className="flex w-full justify-end mt-1.5">
+              <span className="text-sm font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                Administrar →
+              </span>
+            </div>
           </button>
         )}
 

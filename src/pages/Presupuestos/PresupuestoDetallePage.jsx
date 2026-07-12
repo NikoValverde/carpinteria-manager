@@ -51,7 +51,6 @@ function PresupuestoDetallePage() {
 
   // Estado para alternativas de presupuesto
   const [alternativas, setAlternativas] = useState([]);
-  const [alternativasOpen, setAlternativasOpen] = useState(false);
   
 
   // Estado para materiales
@@ -587,8 +586,6 @@ useEffect(() => {
             presupuestoId={id}
             alternativas={alternativas}
             setAlternativas={setAlternativas}
-            open={alternativasOpen}
-            onOpenChange={setAlternativasOpen}
           />
 
           <MaterialesPresupuesto
@@ -666,7 +663,6 @@ useEffect(() => {
             guardarResumenFinanciero={guardarResumenFinanciero}
             aplicarPrecioFinal={aplicarPrecioFinal}
             alternativas={alternativas}
-            onVerAlternativas={() => setAlternativasOpen(true)}
           />
         </div>
       </div>
