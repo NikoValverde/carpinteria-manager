@@ -82,31 +82,30 @@ export default function AlternativasPresupuesto({
   return (
     <SectionCard
       title={
-        <div className="flex flex-col leading-tight">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-            Alternativas de Trabajo
-          </h2>
-          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-            {alternativas.length}{" "}
-            {alternativas.length === 1
-              ? "alternativa registrada"
-              : "alternativas registradas"}
-          </span>
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Alternativas de Trabajo
+            </h2>
+            <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+              {alternativas.length}{" "}
+              {alternativas.length === 1
+                ? "alternativa registrada"
+                : "alternativas registradas"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleNuevaAlternativa}
+            className="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-700 shrink-0"
+          >
+            <Plus size={16} />
+            Nueva alternativa
+          </button>
         </div>
       }
       icon={Layers}
     >
-      <div className="flex justify-end mb-4">
-        <button
-          type="button"
-          onClick={handleNuevaAlternativa}
-          className="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-700"
-        >
-          <Plus size={16} />
-          Nueva alternativa
-        </button>
-      </div>
-
       {alternativas.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Todavía no hay alternativas para este presupuesto.

@@ -4,11 +4,13 @@ export default function AlternativaModal({ abierto, alternativa, onCancelar, onG
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
+  const [tipoPrecio, setTipoPrecio] = useState("SUMA");
 
   useEffect(() => {
     setTitulo(alternativa?.titulo || "");
     setDescripcion(alternativa?.descripcion || "");
     setPrecio(alternativa?.precio ?? "");
+    setTipoPrecio(alternativa?.tipo_precio || "SUMA");
   }, [alternativa, abierto]);
 
   if (!abierto) return null;
@@ -18,6 +20,7 @@ export default function AlternativaModal({ abierto, alternativa, onCancelar, onG
       titulo,
       descripcion,
       precio,
+      tipo_precio: tipoPrecio,
     });
   }
 
@@ -57,7 +60,7 @@ export default function AlternativaModal({ abierto, alternativa, onCancelar, onG
 
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-              Precio
+              Precio Alternativa
             </label>
             <div className="relative">
               <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-zinc-400">
@@ -75,8 +78,39 @@ export default function AlternativaModal({ abierto, alternativa, onCancelar, onG
                   setPrecio(valorLimpio ? Number(valorLimpio) : 0);
                 }}
                 className="w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent pl-7 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="0"
+                placeholder="Ingrese el precio de la alternativa"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              Tipo de precio
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <input
+                  type="radio"
+                  name="tipoPrecio"
+                  value="SUMA"
+                  checked={tipoPrecio === "SUMA"}
+                  onChange={(e) => setTipoPrecio(e.target.value)}
+                  className="text-orange-500 focus:ring-orange-500"
+                />
+                Se suma al Precio Final
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <input
+                  type="radio"
+                  name="tipoPrecio"
+                  value="TOTAL"
+                  checked={tipoPrecio === "TOTAL"}
+                  onChange={(e) => setTipoPrecio(e.target.value)}
+                  className="text-orange-500 focus:ring-orange-500"
+                />
+                Alternativa al Precio Final
+              </label>
             </div>
           </div>
         </div>

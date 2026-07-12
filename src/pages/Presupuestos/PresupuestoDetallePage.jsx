@@ -45,7 +45,9 @@ function PresupuestoDetallePage() {
   // Estado para presupuesto
   const [presupuesto, setPresupuesto] = useState(null);
   const [observaciones, setObservaciones] = useState("");
-  const [notasInternas, setNotasInternas] = useState("");
+
+  {/*const [notasInternas, setNotasInternas] = useState("");*/}
+
   const [opcionales, setOpcionales] = useState("");
   const [precioOpcional, setPrecioOpcional] = useState(0);
 
@@ -187,7 +189,7 @@ useEffect(() => {
         setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
         setDescripcion(data.descripcion || "");
         setObservaciones(data.observaciones || "");
-        setNotasInternas(data.notas_internas || "");
+        {/*setNotasInternas(data.notas_internas || "");*/}
         setOpcionales(data.opcionales || "");
         setPrecioOpcional(data.precio_opcional || 0);
       } catch (error) {
@@ -506,7 +508,7 @@ useEffect(() => {
       setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
       setDescripcion(data.descripcion || "");
       setObservaciones(data.observaciones || "");
-      setNotasInternas(data.notas_internas || "");
+      {/*setNotasInternas(data.notas_internas || "");*/}
       setOpcionales(data.opcionales || "");
       setPrecioOpcional(data.precio_opcional || 0);
     } catch (error) {
@@ -538,6 +540,7 @@ useEffect(() => {
     }
   }
 
+  {/* Componente para guardar notas internas 
   async function guardarNotasInternas() {
     try {
       await actualizarPresupuesto(id, {
@@ -546,7 +549,7 @@ useEffect(() => {
     } catch (error) {
       console.error(error);
     }
-  }
+  }   */}
 
   async function aplicarPrecioFinal(nuevoPrecio) {
     try {

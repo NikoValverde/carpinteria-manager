@@ -293,11 +293,7 @@ function ResumenFinanciero({
 
         {/* Alternativas de Trabajo */}
         {alternativas.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {}}
-            className="flex w-full cursor-pointer flex-col gap-1 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 text-left shadow-sm transition-colors hover:bg-blue-100/70 dark:hover:bg-blue-950/40"
-          >
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 shadow-sm">
             {/* Encabezado */}
             <div className="flex w-full items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
@@ -310,22 +306,43 @@ function ResumenFinanciero({
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                   Alternativas de Trabajo
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {alternativas.length}{" "}
-                  {alternativas.length === 1
-                    ? "alternativa disponible"
-                    : "alternativas disponibles"}
-                </p>
+                
               </div>
             </div>
 
-            {/* Botón de acción */}
-            <div className="flex w-full justify-end mt-1.5">
-              <span className="text-sm font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                Administrar →
-              </span>
+            {/* Detalle económico por alternativa */}
+            <div className="mt-3 divide-y divide-blue-200/70 dark:divide-blue-800/40">
+              {alternativas.map((alternativa) => (
+                <div key={alternativa.id} className="py-3 first:pt-0 last:pb-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    {alternativa.titulo}
+                  </p>
+
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Precio Alternativa
+                    </span>
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {formatoMoneda(alternativa.precio)}
+                    </span>
+                  </div>
+
+                  {alternativa.tipo_precio === "SUMA" && (
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Precio Final + Alternativa
+                      </span>
+                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        {formatoMoneda(
+                          Number(precioFinal || 0) + Number(alternativa.precio || 0),
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          </button>
+          </div>
         )}
 
         {/* Advertencia: precio desactualizado */}
