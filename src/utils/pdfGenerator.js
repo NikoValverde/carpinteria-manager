@@ -112,6 +112,88 @@ function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
   return y + altoTexto;
 }
 
+// Función auxiliar para dibujar la sección "ALTERNATIVAS DE TRABAJO".
+// Reutiliza la misma barra de título gris grafito que "dibujarCaja", pero
+// el cuerpo es una lista compacta (título + importes en dos columnas) para
+// no comprometer que el presupuesto entre en una sola hoja A4. El naranja
+// se usa únicamente en los importes, igual que en el resto del documento.
+function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
+  const altoBarraTitulo = 6;
+
+  doc.setFillColor(...COLOR_GRIS_OSCURO);
+  doc.rect(x, y, ancho, altoBarraTitulo, "F");
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, "bold");
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text("ALTERNATIVAS DE TRABAJO", x + ancho / 2, y + altoBarraTitulo / 2 + 1.5, {
+    align: "center",
+  });
+  doc.setFont(undefined, "normal");
+  doc.setTextColor(...COLOR_NEGRO);
+
+  let yCursor = y + altoBarraTitulo + 5;
+  const anchoMitad = ancho / 2;
+
+  alternativas.forEach((alternativa, indice) => {
+    if (indice > 0) {
+      doc.setDrawColor(...COLOR_GRIS_BORDE);
+      doc.setLineWidth(0.3);
+      doc.line(x + 4, yCursor - 3, x + ancho - 4, yCursor - 3);
+      doc.setDrawColor(...COLOR_NEGRO);
+    }
+
+    // Título de la alternativa
+    doc.setFontSize(9.5);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_GRIS_OSCURO);
+    doc.text(alternativa.titulo || "", x + 4, yCursor);
+    doc.setFont(undefined, "normal");
+
+    yCursor += 5;
+
+    // Bloque "Precio Alternativa" (columna izquierda)
+    doc.setFontSize(7.5);
+    doc.setTextColor(...COLOR_NEGRO);
+    doc.text("Precio Alternativa", x + 4, yCursor);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_NARANJA);
+    doc.text(formatearPrecio(alternativa.precio), x + 4, yCursor + 5);
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...COLOR_NEGRO);
+
+    // Bloque "Precio Final" (columna derecha, solo si SUMA)
+    if (alternativa.tipo_precio === "SUMA") {
+      const precioFinalAlternativa =
+        Number(precioFinal || 0) + Number(alternativa.precio || 0);
+
+      doc.setFontSize(7.5);
+      doc.setTextColor(...COLOR_NEGRO);
+      doc.text("Precio Final", x + anchoMitad, yCursor);
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(...COLOR_NARANJA);
+      doc.text(formatearPrecio(precioFinalAlternativa), x + anchoMitad, yCursor + 5);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(...COLOR_NEGRO);
+    }
+
+    yCursor += 8;
+  });
+
+  const altoCuerpo = yCursor - (y + altoBarraTitulo);
+
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.2);
+  doc.rect(x, y, ancho, altoBarraTitulo + altoCuerpo);
+  doc.setDrawColor(...COLOR_NEGRO);
+
+  return y + altoBarraTitulo + altoCuerpo;
+}
+
 // Función para generar el PDF del presupuesto.
 // Recibe toda la información necesaria por parámetros (no depende de estado de React).
 export async function generarPDF({
@@ -121,6 +203,7 @@ export async function generarPDF({
   precioFinal,
   precioOpcional,
   totalConOpcional,
+  alternativas,
 }) {
   const doc = new jsPDF();
 
@@ -352,7 +435,14 @@ export async function generarPDF({
   doc.setDrawColor(...COLOR_NEGRO);
   doc.setTextColor(...COLOR_NEGRO);
 
-  y += altoCajaTotal + 3; // total → footer
+  y += altoCajaTotal + 3; // total → alternativas (o → footer, si no hay alternativas)
+
+  // ALTERNATIVAS DE TRABAJO (nueva sección, solo si hay alternativas cargadas)
+
+  if (alternativas?.length > 0) {
+    y = dibujarAlternativas(doc, margen, y, anchoUtil, alternativas, precioFinal);
+    y += 3; // alternativas → footer
+  }
 
   // PIE DE PÁGINA: fondo gris oscuro, 3 bloques (Empresa | WhatsApp | Web)
   // separados por líneas verticales finas, con íconos chicos y genéricos.

@@ -636,6 +636,7 @@ useEffect(() => {
                   precioFinal,
                   precioOpcional,
                   totalConOpcional,
+                  alternativas,
                 })
               }
             >
