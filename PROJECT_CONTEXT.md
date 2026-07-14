@@ -453,3 +453,65 @@ El detalle se encuentra en CONTEXT_MODULE_AI.md
 # Objetivo comercial
 
 Transformar la aplicación en un SaaS de gestión para carpinterías y herrerías pequeñas y medianas.
+
+## Módulo: Alternativas de Trabajo (Julio 2026)
+
+### Objetivo
+
+Permitir ofrecer distintas versiones de un mismo trabajo dentro de un presupuesto sin duplicar presupuestos completos.
+
+### Arquitectura
+
+- Nueva tabla `alternativas_presupuesto`.
+- Relación 1:N con `presupuestos`.
+- CRUD independiente.
+- Integración con Resumen Financiero.
+- Integración con PDF.
+
+### Modelo de datos
+
+Campos principales:
+
+- titulo
+- descripcion
+- precio
+- tipo_precio
+
+### tipo_precio
+
+SUMA
+
+La alternativa representa un adicional al presupuesto principal.
+
+TOTAL
+
+La alternativa representa un precio final independiente.
+
+### Reglas de negocio
+
+SUMA
+
+Precio Final Alternativa = Precio Final + Precio Alternativa
+
+TOTAL
+
+Precio Final Alternativa = Precio Alternativa
+
+### UI
+
+Nueva sección "Alternativas de Trabajo".
+
+Resumen Financiero muestra únicamente información económica.
+
+El CRUD permanece aislado en su propia sección.
+
+### PDF
+
+Las alternativas se imprimen únicamente si existen.
+
+Se respeta la lógica SUMA/TOTAL.
+
+### Pendientes
+
+- Mejorar paginación cuando el PDF exceda una hoja.
+- Evaluar anexos e imágenes en futuras versiones.
