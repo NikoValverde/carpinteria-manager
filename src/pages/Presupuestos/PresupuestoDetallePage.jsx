@@ -15,6 +15,8 @@ import {
 
 import { obtenerIntegrantes } from "../../services/integrantesService";
 
+import { obtenerAlternativas } from "../../services/alternativasService";
+
 import {
   obtenerManoObraPresupuesto,
   agregarManoObraPresupuesto,
@@ -25,7 +27,7 @@ import ResumenFinanciero from "../../components/Presupuestos/ResumenFinanciero";
 import MaterialesPresupuesto from "../../components/Presupuestos/MaterialesPresupuesto";
 import ManoObraPresupuesto from "../../components/Presupuestos/ManoObraPresupuesto";
 import DatosGenerales from "../../components/Presupuestos/DatosGenerales";
-import OpcionalesNotas from "../../components/Presupuestos/OpcionalesNotas";
+import AlternativasPresupuesto from "../../components/Presupuestos/AlternativasPresupuesto";
 
 import { generarPDF } from "../../utils/pdfGenerator";
 
@@ -43,9 +45,14 @@ function PresupuestoDetallePage() {
   // Estado para presupuesto
   const [presupuesto, setPresupuesto] = useState(null);
   const [observaciones, setObservaciones] = useState("");
-  const [notasInternas, setNotasInternas] = useState("");
+
+  {/*const [notasInternas, setNotasInternas] = useState("");*/}
+
   const [opcionales, setOpcionales] = useState("");
   const [precioOpcional, setPrecioOpcional] = useState(0);
+
+  // Estado para alternativas de presupuesto
+  const [alternativas, setAlternativas] = useState([]);
   
 
   // Estado para materiales
@@ -154,6 +161,16 @@ useEffect(() => {
     }
   }
 
+  async function cargarAlternativas() {
+    try {
+      const data = await obtenerAlternativas(id);
+
+      setAlternativas(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   
   useEffect(() => {
     const fetchData = async () => {
@@ -161,6 +178,7 @@ useEffect(() => {
       await cargarCatalogoMateriales();
       await cargarIntegrantes();
       await cargarManoObra();
+      await cargarAlternativas();
       try {
         const data = await obtenerPresupuestoPorId(id);
 
@@ -171,7 +189,7 @@ useEffect(() => {
         setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
         setDescripcion(data.descripcion || "");
         setObservaciones(data.observaciones || "");
-        setNotasInternas(data.notas_internas || "");
+        {/*setNotasInternas(data.notas_internas || "");*/}
         setOpcionales(data.opcionales || "");
         setPrecioOpcional(data.precio_opcional || 0);
       } catch (error) {
@@ -490,7 +508,7 @@ useEffect(() => {
       setConsumiblesImprevistos(data.consumibles_imprevistos || 0);
       setDescripcion(data.descripcion || "");
       setObservaciones(data.observaciones || "");
-      setNotasInternas(data.notas_internas || "");
+      {/*setNotasInternas(data.notas_internas || "");*/}
       setOpcionales(data.opcionales || "");
       setPrecioOpcional(data.precio_opcional || 0);
     } catch (error) {
@@ -522,6 +540,7 @@ useEffect(() => {
     }
   }
 
+  {/* Componente para guardar notas internas 
   async function guardarNotasInternas() {
     try {
       await actualizarPresupuesto(id, {
@@ -530,7 +549,7 @@ useEffect(() => {
     } catch (error) {
       console.error(error);
     }
-  }
+  }   */}
 
   async function aplicarPrecioFinal(nuevoPrecio) {
     try {
@@ -544,17 +563,7 @@ useEffect(() => {
     }
   }
 
-  async function guardarOpcionales() {
-    try {
-      await actualizarPresupuesto(id, {
-        opcionales,
-        precio_opcional: Number(precioOpcional) || 0,
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
+ 
   if (!presupuesto) {
     return <p>Cargando...</p>;
   }
@@ -576,15 +585,10 @@ useEffect(() => {
             materiales={materialesPresupuesto}
           />
 
-          <OpcionalesNotas
-            opcionales={opcionales}
-            setOpcionales={setOpcionales}
-            guardarOpcionales={guardarOpcionales}
-            precioOpcional={precioOpcional}
-            setPrecioOpcional={setPrecioOpcional}
-            notasInternas={notasInternas}
-            setNotasInternas={setNotasInternas}
-            guardarNotasInternas={guardarNotasInternas}
+          <AlternativasPresupuesto
+            presupuestoId={id}
+            alternativas={alternativas}
+            setAlternativas={setAlternativas}
           />
 
           <MaterialesPresupuesto
@@ -632,6 +636,7 @@ useEffect(() => {
                   precioFinal,
                   precioOpcional,
                   totalConOpcional,
+                  alternativas,
                 })
               }
             >
@@ -661,6 +666,7 @@ useEffect(() => {
             totalConOpcional={totalConOpcional}
             guardarResumenFinanciero={guardarResumenFinanciero}
             aplicarPrecioFinal={aplicarPrecioFinal}
+            alternativas={alternativas}
           />
         </div>
       </div>

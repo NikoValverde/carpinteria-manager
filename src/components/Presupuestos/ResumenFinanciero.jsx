@@ -28,6 +28,7 @@ function ResumenFinanciero({
   totalConOpcional,
   guardarResumenFinanciero,
   aplicarPrecioFinal,
+  alternativas,
 }) {
   // Proporciones visuales de la barra de distribución de costos.
   // Es un valor puramente de presentación derivado de los props existentes;
@@ -290,18 +291,72 @@ function ResumenFinanciero({
           </div>
         </div>
 
+        {/* Alternativas de Trabajo */}
+        {alternativas.length > 0 && (
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/20 px-4 py-3.5 shadow-sm">
+            {/* Encabezado */}
+            <div className="flex w-full items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                <Layers
+                  size={18}
+                  className="text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  Alternativas de Trabajo
+                </p>
+                
+              </div>
+            </div>
+
+            {/* Detalle económico por alternativa */}
+            <div className="mt-3 divide-y divide-blue-200/70 dark:divide-blue-800/40">
+              {alternativas.map((alternativa) => (
+                <div key={alternativa.id} className="py-3 first:pt-0 last:pb-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    {alternativa.titulo}
+                  </p>
+
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Precio Alternativa
+                    </span>
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {formatoMoneda(alternativa.precio)}
+                    </span>
+                  </div>
+
+                  {alternativa.tipo_precio === "SUMA" && (
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Precio Final + Alternativa
+                      </span>
+                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        {formatoMoneda(
+                          Number(precioFinal || 0) + Number(alternativa.precio || 0),
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Advertencia: precio desactualizado */}
         {precioDesactualizado && (
-          <div className="flex items-start gap-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-4">
+          <div className="flex items-start gap-3 rounded-lg border border-yellow-400 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 p-4">
             <AlertTriangle
               size={18}
-              className="mt-0.5 shrink-0 text-amber-500"
+              className="mt-0.5 shrink-0 text-yellow-600"
             />
             <div>
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
                 El Precio Final fue modificado o quedó desactualizado.
               </p>
-              <p className="text-sm text-amber-600 dark:text-amber-500">
+              <p className="text-sm text-yellow-600 dark:text-yellow-500">
                 Diferencia: {diferenciaPrecio > 0 ? "+" : "-"}$
                 {Math.abs(diferenciaPrecio).toLocaleString("es-AR")}
               </p>

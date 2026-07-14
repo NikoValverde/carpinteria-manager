@@ -302,22 +302,137 @@ merge main
 - Integrantes.
 - Presupuesto Detalle.
 
-## Próximo
+## Esquema del proyecto
 
-1. Estados del presupuesto.
-2. IA para descripciones.
-3. PDF profesional.
-4. Dashboard.
-5. Gestión de usuarios.
-6. Multiempresa.
+┣ 📂.vscode
+┃ ┗ 📜settings.json
+┣ 📂public
+┃ ┣ 📜favicon.svg
+┃ ┣ 📜icons.svg
+┃ ┣ 📜logo-valverde.png
+┃ ┣ 📜logo-valverde1.png
+┃ ┗ 📜logo.png
+┣ 📂src
+┃ ┣ 📂assets
+┃ ┃ ┣ 📜hero.png
+┃ ┃ ┣ 📜react.svg
+┃ ┃ ┗ 📜vite.svg
+┃ ┣ 📂components
+┃ ┃ ┣ 📂Presupuestos
+┃ ┃ ┃ ┣ 📜AlternativaCard.jsx
+┃ ┃ ┃ ┣ 📜AlternativaModal.jsx
+┃ ┃ ┃ ┣ 📜AlternativasPresupuesto.jsx
+┃ ┃ ┃ ┣ 📜DatosGenerales.jsx
+┃ ┃ ┃ ┣ 📜ManoObraPresupuesto.jsx
+┃ ┃ ┃ ┣ 📜MaterialesPresupuesto.jsx
+┃ ┃ ┃ ┣ 📜OpcionalesNotas.jsx
+┃ ┃ ┃ ┣ 📜ResumenFinanciero.jsx
+┃ ┃ ┃ ┣ 📜WritingAssistant.jsx
+┃ ┃ ┃ ┗ 📜WritingAssistantModal.jsx
+┃ ┃ ┗ 📂ui
+┃ ┃   ┗ 📜SectionCard.jsx
+┃ ┣ 📂context
+┃ ┃ ┣ 📜AuthContext.jsx
+┃ ┃ ┗ 📜context.js
+┃ ┣ 📂hooks
+┃ ┃ ┗ 📜useAuth.js
+┃ ┣ 📂layouts
+┃ ┃ ┗ 📜MainLayout.jsx
+┃ ┣ 📂lib
+┃ ┃ ┗ 📜supabase.js
+┃ ┣ 📂pages
+┃ ┃ ┣ 📂Auth
+┃ ┃ ┃ ┗ 📜LoginPage.jsx
+┃ ┃ ┣ 📂Clientes
+┃ ┃ ┃ ┗ 📜ClientesPage.jsx
+┃ ┃ ┣ 📂Integrantes
+┃ ┃ ┃ ┗ 📜IntegrantesPage.jsx
+┃ ┃ ┣ 📂Materiales
+┃ ┃ ┃ ┗ 📜MaterialesPage.jsx
+┃ ┃ ┗ 📂Presupuestos
+┃ ┃   ┣ 📜PresupuestoDetallePage.jsx
+┃ ┃   ┗ 📜PresupuestosPage.jsx
+┃ ┣ 📂routes
+┃ ┃ ┗ 📜ProtectedRoute.jsx
+┃ ┣ 📂services
+┃ ┃ ┣ 📜alternativasService.js
+┃ ┃ ┣ 📜clientesService.js
+┃ ┃ ┣ 📜integrantesService.js
+┃ ┃ ┣ 📜materialesService.js
+┃ ┃ ┣ 📜presupuestoManoObraService.js
+┃ ┃ ┣ 📜presupuestoMaterialesService.js
+┃ ┃ ┣ 📜presupuestosService.js
+┃ ┃ ┗ 📜writingAssistantService.js
+┃ ┣ 📂utils
+┃ ┃ ┣ 📜materiales.js
+┃ ┃ ┣ 📜pdfGenerator.js
+┃ ┃ ┗ 📜validarMaterial.js
+┃ ┣ 📜App.css
+┃ ┣ 📜App.jsx
+┃ ┣ 📜index.css
+┃ ┣ 📜main.jsx
+┃ ┗ 📜tailwind.css
+┣ 📂supabase
+┃ ┣ 📂.temp
+┃ ┃ ┣ 📜gotrue-version
+┃ ┃ ┣ 📜linked-project.json
+┃ ┃ ┣ 📜pooler-url
+┃ ┃ ┣ 📜postgres-version
+┃ ┃ ┣ 📜project-ref
+┃ ┃ ┣ 📜rest-version
+┃ ┃ ┣ 📜storage-migration
+┃ ┃ ┗ 📜storage-version
+┃ ┣ 📂functions
+┃ ┃ ┗ 📂writing-assistant
+┃ ┃   ┣ 📂guards
+┃ ┃   ┃ ┗ 📜ContextGuardian.ts
+┃ ┃   ┣ 📂prompts
+┃ ┃   ┃ ┣ 📜generatePrompt.ts
+┃ ┃   ┃ ┣ 📜improvePrompt.ts
+┃ ┃   ┃ ┣ 📜promptBuilder.ts
+┃ ┃   ┃ ┣ 📜styleGuide.ts
+┃ ┃   ┃ ┗ 📜systemPrompt.ts
+┃ ┃   ┣ 📂providers
+┃ ┃   ┃ ┣ 📜aiProvider.ts
+┃ ┃   ┃ ┣ 📜fakeProvider.ts
+┃ ┃   ┃ ┣ 📜geminiProvider.ts
+┃ ┃   ┃ ┗ 📜providerFactory.ts
+┃ ┃   ┣ 📂types
+┃ ┃   ┃ ┣ 📜promptContext.ts
+┃ ┃   ┃ ┣ 📜promptRequest.ts
+┃ ┃   ┃ ┣ 📜providerResponse.ts
+┃ ┃   ┃ ┗ 📜ValidationResult.ts
+┃ ┃   ┣ 📂utils
+┃ ┃   ┃ ┗ 📜response.ts
+┃ ┃   ┣ 📜.npmrc
+┃ ┃   ┣ 📜deno.json
+┃ ┃   ┗ 📜index.ts
+┃ ┣ 📂migrations
+┃ ┃ ┣ 📜20260706_create_alternativas_presupuesto.sql
+┃ ┃ ┗ 📜20260712_add_tipo_precio_alternativas.sql
+┃ ┣ 📜.gitignore
+┃ ┗ 📜config.toml
+┣ 📜.env
+┣ 📜.env.example
+┣ 📜.gitignore
+┣ 📜.repomixignore
+┣ 📜CONTEXT_MODULE_AI.md
+┣ 📜DB_SCHEMA.md
+┣ 📜eslint.config.js
+┣ 📜index.html
+┣ 📜package.json
+┣ 📜PROJECT_CONTEXT.md
+┣ 📜README.md
+┣ 📜repomix-output.xml
+┗ 📜vite.config.js
 
 ---
 
-# IA futura
+# Modulo AI
 
 Objetivo:
 
-Generar automáticamente descripciones técnicas de presupuestos.
+Mejorar y generar automáticamente descripciones técnicas de presupuestos.
 
 Ejemplo:
 
@@ -330,6 +445,8 @@ Entrada:
 Salida:
 
 - descripción profesional lista para PDF.
+
+El detalle se encuentra en CONTEXT_MODULE_AI.md
 
 ---
 
