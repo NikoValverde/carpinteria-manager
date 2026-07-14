@@ -34,32 +34,39 @@ async function obtenerLogoBase64() {
   });
 }
 
-// Íconos vectoriales mínimos para el footer. Son formas GENÉRICAS y
-// abstractas (no reproducen el logo real de WhatsApp ni de ningún sitio),
-// dibujadas con primitivas nativas de jsPDF para que siempre se vean
-// nítidas sin depender de fuentes/emoji.
-function dibujarIconoChat(doc, x, y, ancho, alto) {
-  doc.setFillColor(...COLOR_BLANCO);
-  doc.roundedRect(x, y, ancho, alto, 0.4, 0.4, "F");
-  doc.triangle(
-    x + ancho * 0.2,
-    y + alto,
-    x + ancho * 0.5,
-    y + alto,
-    x + ancho * 0.2,
-    y + alto + 0.9,
-    "F",
-  );
+// ===== FUNCIONES PARA CARGAR ÍCONOS DEL FOOTER =====
+
+// Función para cargar ícono de WhatsApp
+async function obtenerIconoWhatsApp() {
+  const response = await fetch("/whatsapp-icon.png");
+  if (!response.ok) {
+    throw new Error("No se pudo cargar el ícono de WhatsApp");
+  }
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
-function dibujarIconoGlobo(doc, cx, cy, r) {
-  doc.setDrawColor(...COLOR_BLANCO);
-  doc.setLineWidth(0.25);
-  doc.circle(cx, cy, r, "S");
-  doc.ellipse(cx, cy, r * 0.45, r, "S");
-  doc.line(cx - r, cy, cx + r, cy);
-  doc.setDrawColor(...COLOR_NEGRO);
+// Función para cargar ícono de Globo
+async function obtenerIconoGlobo() {
+  const response = await fetch("/globe-icon.png");
+  if (!response.ok) {
+    throw new Error("No se pudo cargar el ícono de Globo");
+  }
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
+
+// ===== FIN FUNCIONES ÍCONOS FOOTER =====
 
 // Función auxiliar para dibujar un recuadro con barra de título (gris
 // oscuro, texto blanco) y cuerpo de texto en negro, alineado a la
@@ -113,10 +120,12 @@ function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
 }
 
 // Función auxiliar para dibujar la sección "ALTERNATIVAS DE TRABAJO".
-// Reutiliza la misma barra de título gris grafito que "dibujarCaja", pero
-// el cuerpo es una lista compacta (título + importes en dos columnas) para
-// no comprometer que el presupuesto entre en una sola hoja A4. El naranja
-// se usa únicamente en los importes, igual que en el resto del documento.
+// Estructura tipo tabla (3 columnas: título | precio alternativa | precio
+// final) para facilitar la comparación entre alternativas. El título de
+// cada fila es el elemento con mayor jerarquía visual, los labels son
+// discretos y el naranja se reserva exclusivamente para los importes,
+// igual que en el resto del documento. La lógica de cálculo (SUMA/TOTAL)
+// no se modifica: esto solo cambia cómo se presenta cada valor.
 function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
   const altoBarraTitulo = 6;
 
@@ -126,66 +135,118 @@ function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
   doc.setFontSize(10);
   doc.setFont(undefined, "bold");
   doc.setTextColor(...COLOR_BLANCO);
-  doc.text("ALTERNATIVAS DE TRABAJO", x + ancho / 2, y + altoBarraTitulo / 2 + 1.5, {
-    align: "center",
-  });
+  doc.text(
+    "ALTERNATIVAS DE TRABAJO",
+    x + ancho / 2,
+    y + altoBarraTitulo / 2 + 1.5,
+    {
+      align: "center",
+    },
+  );
   doc.setFont(undefined, "normal");
   doc.setTextColor(...COLOR_NEGRO);
 
-  let yCursor = y + altoBarraTitulo + 5;
-  const anchoMitad = ancho / 2;
+  // Columnas: el título ocupa la mitad del ancho para tener protagonismo;
+  // los importes comparten la otra mitad en dos columnas más angostas.
+  const anchoTitulo = ancho * 0.5;
+  const anchoPrecio = ancho * 0.25;
+  const xColTitulo = x;
+  const xColPrecioAlt = x + anchoTitulo;
+  const xColPrecioFinal = x + anchoTitulo + anchoPrecio;
+
+  const yInicioFilas = y + altoBarraTitulo;
+  const altoFilaAlternativa = 13;
+
+  let yCursor = yInicioFilas;
 
   alternativas.forEach((alternativa, indice) => {
+    const yFila = yCursor;
+
+    // Divisor horizontal sutil entre filas (no se dibuja antes de la primera)
     if (indice > 0) {
       doc.setDrawColor(...COLOR_GRIS_BORDE);
-      doc.setLineWidth(0.3);
-      doc.line(x + 4, yCursor - 3, x + ancho - 4, yCursor - 3);
+      doc.setLineWidth(0.15);
+      doc.line(x, yFila, x + ancho, yFila);
       doc.setDrawColor(...COLOR_NEGRO);
     }
 
-    // Título de la alternativa
-    doc.setFontSize(9.5);
+    const yTextoMedio = yFila + altoFilaAlternativa / 2;
+
+    // Título de la alternativa: primer elemento que se lee, negrita,
+    // tamaño ligeramente superior, gris grafito (sin columna de índice).
+    doc.setFontSize(10.5);
     doc.setFont(undefined, "bold");
     doc.setTextColor(...COLOR_GRIS_OSCURO);
-    doc.text(alternativa.titulo || "", x + 4, yCursor);
+    doc.text(alternativa.titulo || "", xColTitulo + 4, yTextoMedio + 1);
     doc.setFont(undefined, "normal");
 
-    yCursor += 5;
+    const esSuma = alternativa.tipo_precio === "SUMA";
 
-    // Bloque "Precio Alternativa" (columna izquierda)
-    doc.setFontSize(7.5);
-    doc.setTextColor(...COLOR_NEGRO);
-    doc.text("Precio Alternativa", x + 4, yCursor);
+    // Columna "Precio Alternativa": solo se muestra en alternativas SUMA.
+    // En TOTAL se deja vacía (sin guion, sin placeholder).
+    if (esSuma) {
+      doc.setFontSize(7);
+      doc.setTextColor(...COLOR_GRIS_OSCURO);
+      doc.text(
+        "Precio Alternativa",
+        xColPrecioAlt + anchoPrecio / 2,
+        yFila + 5,
+        {
+          align: "center",
+        },
+      );
 
-    doc.setFontSize(11);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(...COLOR_NARANJA);
-    doc.text(formatearPrecio(alternativa.precio), x + 4, yCursor + 5);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(...COLOR_NEGRO);
-
-    // Bloque "Precio Final" (columna derecha, solo si SUMA)
-    if (alternativa.tipo_precio === "SUMA") {
-      const precioFinalAlternativa =
-        Number(precioFinal || 0) + Number(alternativa.precio || 0);
-
-      doc.setFontSize(7.5);
-      doc.setTextColor(...COLOR_NEGRO);
-      doc.text("Precio Final", x + anchoMitad, yCursor);
-
-      doc.setFontSize(11);
+      doc.setFontSize(10.5);
       doc.setFont(undefined, "bold");
       doc.setTextColor(...COLOR_NARANJA);
-      doc.text(formatearPrecio(precioFinalAlternativa), x + anchoMitad, yCursor + 5);
+      doc.text(
+        formatearPrecio(alternativa.precio),
+        xColPrecioAlt + anchoPrecio / 2,
+        yFila + 10,
+        { align: "center" },
+      );
       doc.setFont(undefined, "normal");
       doc.setTextColor(...COLOR_NEGRO);
     }
 
-    yCursor += 8;
+    // Columna "Precio Final": en SUMA es precioFinal + alternativa.precio;
+    // en TOTAL, el valor cargado ya representa el precio final completo.
+    const precioFinalMostrado = esSuma
+      ? Number(precioFinal || 0) + Number(alternativa.precio || 0)
+      : Number(alternativa.precio || 0);
+
+    doc.setFontSize(7);
+    doc.setTextColor(...COLOR_GRIS_OSCURO);
+    doc.text("Precio Final", xColPrecioFinal + anchoPrecio / 2, yFila + 5, {
+      align: "center",
+    });
+
+    doc.setFontSize(10.5);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_NARANJA);
+    doc.text(
+      formatearPrecio(precioFinalMostrado),
+      xColPrecioFinal + anchoPrecio / 2,
+      yFila + 10,
+      { align: "center" },
+    );
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...COLOR_NEGRO);
+
+    yCursor += altoFilaAlternativa;
   });
 
-  const altoCuerpo = yCursor - (y + altoBarraTitulo);
+  const altoCuerpo = yCursor - yInicioFilas;
 
+  // Divisores verticales sutiles y continuos entre columnas (estructura de
+  // tabla), sin protagonismo frente al contenido.
+  doc.setDrawColor(...COLOR_GRIS_BORDE);
+  doc.setLineWidth(0.15);
+  doc.line(xColPrecioAlt, yInicioFilas, xColPrecioAlt, yCursor);
+  doc.line(xColPrecioFinal, yInicioFilas, xColPrecioFinal, yCursor);
+  doc.setDrawColor(...COLOR_NEGRO);
+
+  // Borde general de la tabla
   doc.setDrawColor(...COLOR_GRIS_BORDE);
   doc.setLineWidth(0.2);
   doc.rect(x, y, ancho, altoBarraTitulo + altoCuerpo);
@@ -212,6 +273,19 @@ export async function generarPDF({
   const anchoUtil = anchoHoja - margen * 2;
 
   let y = margen;
+
+  // ===== CARGAR ÍCONOS DEL FOOTER =====
+  let iconoWhatsApp = null;
+  let iconoGlobo = null;
+
+  try {
+    iconoWhatsApp = await obtenerIconoWhatsApp();
+    iconoGlobo = await obtenerIconoGlobo();
+  } catch (error) {
+    console.error("Error cargando íconos del footer:", error);
+    // Continuar sin íconos (fallback visual)
+  }
+  // ===== FIN CARGA DE ÍCONOS =====
 
   // ENCABEZADO (logo + "Presupuesto" ya incluido en la imagen)
   // Se mantiene exactamente igual: mismo logo, mismo banner, mismo tamaño,
@@ -390,11 +464,39 @@ export async function generarPDF({
   doc.setFontSize(17);
   doc.setFont(undefined, "bold");
   doc.setTextColor(...COLOR_NARANJA);
-  doc.text(formatearPrecio(precioFinal), anchoHoja / 2, y + altoBarraTotal + 10, {
-    align: "center",
-  });
+  doc.text(
+    formatearPrecio(precioFinal),
+    anchoHoja / 2,
+    y + altoBarraTotal + 10,
+    {
+      align: "center",
+    },
+  );
   doc.setFont(undefined, "normal");
   doc.setTextColor(...COLOR_NEGRO);
+
+  // Acento visual: dos líneas finas naranjas flanqueando el importe
+  // principal, inspiradas en la referencia estética. Puramente decorativo,
+  // no altera el cálculo ni la jerarquía (el importe sigue siendo el
+  // elemento más grande y destacado del documento).
+  const anchoTextoTotal = doc.getTextWidth(formatearPrecio(precioFinal));
+  doc.setDrawColor(...COLOR_NARANJA);
+  doc.setLineWidth(0.4);
+  const yLineaTotal = y + altoBarraTotal + 7;
+  const semiAnchoTexto = anchoTextoTotal / 2 + 6;
+  doc.line(
+    anchoHoja / 2 - semiAnchoTexto - 14,
+    yLineaTotal,
+    anchoHoja / 2 - semiAnchoTexto,
+    yLineaTotal,
+  );
+  doc.line(
+    anchoHoja / 2 + semiAnchoTexto,
+    yLineaTotal,
+    anchoHoja / 2 + semiAnchoTexto + 14,
+    yLineaTotal,
+  );
+  doc.setDrawColor(...COLOR_NEGRO);
 
   let altoCajaTotal = altoBarraTotal + 17;
 
@@ -440,77 +542,146 @@ export async function generarPDF({
   // ALTERNATIVAS DE TRABAJO (nueva sección, solo si hay alternativas cargadas)
 
   if (alternativas?.length > 0) {
-    y = dibujarAlternativas(doc, margen, y, anchoUtil, alternativas, precioFinal);
+    y = dibujarAlternativas(
+      doc,
+      margen,
+      y,
+      anchoUtil,
+      alternativas,
+      precioFinal,
+    );
     y += 3; // alternativas → footer
   }
 
-  // PIE DE PÁGINA: fondo gris oscuro, 3 bloques (Empresa | WhatsApp | Web)
-  // separados por líneas verticales finas, con íconos chicos y genéricos.
-
-  const altoFooter = 10;
+  // ===== PIE DE PÁGINA =====
+  const altoFooter = 10; // Volvemos a 10mm como en la imagen
 
   doc.setFillColor(...COLOR_GRIS_OSCURO);
   doc.rect(margen, y, anchoUtil, altoFooter, "F");
 
+  // Líneas divisorias en naranja
   const col1Ancho = anchoUtil * 0.4;
   const col2Ancho = anchoUtil * 0.28;
   const divisor1X = margen + col1Ancho;
   const divisor2X = margen + col1Ancho + col2Ancho;
 
-  doc.setDrawColor(...COLOR_GRIS_BORDE);
-  doc.setLineWidth(0.2);
+  doc.setDrawColor(...COLOR_NARANJA);
+  doc.setLineWidth(0.8);
   doc.line(divisor1X, y + 1.5, divisor1X, y + altoFooter - 1.5);
   doc.line(divisor2X, y + 1.5, divisor2X, y + altoFooter - 1.5);
   doc.setDrawColor(...COLOR_NEGRO);
 
-  const baseLineFooter = y + altoFooter / 2 + 1.5;
+  // Calcular centro vertical exacto
+  const centroYFooter = y + altoFooter / 2;
+  // Ajuste para centrar perfectamente el texto (basado en la altura de la fuente)
+  const offsetYTexto = 0.8; // Reducido para mejor centrado
 
-  // Nombre de la empresa (izquierda)
-  doc.setFontSize(8);
+  // ===== COLUMNA 1: Nombre de la empresa =====
+  doc.setFontSize(9);
   doc.setFont(undefined, "bold");
   doc.setTextColor(...COLOR_BLANCO);
-  doc.text("CARPINTERÍA Y HERRERÍA VALVERDE", margen + 4, baseLineFooter);
 
-  // WhatsApp (centro), con ícono de "globo de chat" genérico
+  const textoEmpresa1 = "CARPINTERÍA Y HERRERÍA ";
+  const textoEmpresa2 = " VALVERDE";
+  const xTextoEmpresa = margen + 6;
+
+  doc.text(textoEmpresa1, xTextoEmpresa, centroYFooter + offsetYTexto);
+
+  const anchoTexto1 = doc.getTextWidth(textoEmpresa1);
+  doc.setTextColor(...COLOR_NARANJA);
+  doc.text(
+    textoEmpresa2,
+    xTextoEmpresa + anchoTexto1,
+    centroYFooter + offsetYTexto,
+  );
+
+  // ===== COLUMNA 2: WhatsApp con ícono =====
   doc.setFont(undefined, "normal");
   doc.setFontSize(8);
+  doc.setTextColor(...COLOR_BLANCO);
+
   const textoWhatsapp = "WhatsApp: +54 9 11 3638-5790";
   const anchoTextoWhatsapp = doc.getTextWidth(textoWhatsapp);
-  const anchoIconoChat = 2.6;
-  const espacioIconoTexto = 1.3;
-  const centroCol2 = margen + col1Ancho + col2Ancho / 2;
-  const inicioBloqueWhatsapp =
-    centroCol2 - (anchoIconoChat + espacioIconoTexto + anchoTextoWhatsapp) / 2;
 
-  dibujarIconoChat(
-    doc,
-    inicioBloqueWhatsapp,
-    y + altoFooter / 2 - 1.6,
-    anchoIconoChat,
-    2,
-  );
+  const tamañoIcono = 3.2;
+  const espacioIconoTexto = 1.5;
+
+  const centroCol2 = margen + col1Ancho + col2Ancho / 2;
+  const anchoTotalBloqueWhatsapp =
+    tamañoIcono + espacioIconoTexto + anchoTextoWhatsapp;
+  const xInicioWhatsapp = centroCol2 - anchoTotalBloqueWhatsapp / 2;
+
+  // Dibujar ícono de WhatsApp
+  if (iconoWhatsApp) {
+    const yIcono = centroYFooter - tamañoIcono / 2;
+    doc.addImage(
+      iconoWhatsApp,
+      "PNG",
+      xInicioWhatsapp,
+      yIcono,
+      tamañoIcono,
+      tamañoIcono,
+    );
+  } else {
+    // Fallback: círculo blanco simple
+    doc.setFillColor(255, 255, 255);
+    doc.circle(
+      xInicioWhatsapp + tamañoIcono / 2,
+      centroYFooter,
+      tamañoIcono / 2,
+      "F",
+    );
+  }
+
   doc.setTextColor(...COLOR_BLANCO);
   doc.text(
     textoWhatsapp,
-    inicioBloqueWhatsapp + anchoIconoChat + espacioIconoTexto,
-    baseLineFooter,
+    xInicioWhatsapp + tamañoIcono + espacioIconoTexto,
+    centroYFooter + offsetYTexto,
   );
 
-  // Sitio web (derecha), con ícono de "globo" genérico
+  // ===== COLUMNA 3: Sitio web con ícono =====
+  doc.setFontSize(8);
+  doc.setTextColor(...COLOR_BLANCO);
+
   const textoWeb = "www.carpinteriavalverde.com.ar";
   const anchoTextoWeb = doc.getTextWidth(textoWeb);
-  const finBloqueWeb = margen + anchoUtil - 4;
-  const inicioTextoWeb = finBloqueWeb - anchoTextoWeb;
-  const radioGlobo = 1.3;
 
-  dibujarIconoGlobo(
-    doc,
-    inicioTextoWeb - radioGlobo - 1.5,
-    y + altoFooter / 2,
-    radioGlobo,
+  // Calcular centro de la columna 3
+  const centroCol3 = margen + col1Ancho + col2Ancho + (anchoUtil * 0.32) / 2;
+  const anchoTotalBloqueWeb = tamañoIcono + espacioIconoTexto + anchoTextoWeb;
+  const xInicioWeb = centroCol3 - anchoTotalBloqueWeb / 2;
+
+  // Dibujar ícono de Globo
+  if (iconoGlobo) {
+    const yIcono = centroYFooter - tamañoIcono / 2;
+    doc.addImage(
+      iconoGlobo,
+      "PNG",
+      xInicioWeb,
+      yIcono,
+      tamañoIcono,
+      tamañoIcono,
+    );
+  } else {
+    // Fallback: círculo blanco simple
+    doc.setFillColor(255, 255, 255);
+    doc.circle(
+      xInicioWeb + tamañoIcono / 2,
+      centroYFooter,
+      tamañoIcono / 2,
+      "F",
+    );
+  }
+
+  doc.setTextColor(...COLOR_BLANCO);
+  doc.text(
+    textoWeb,
+    xInicioWeb + tamañoIcono + espacioIconoTexto,
+    centroYFooter + offsetYTexto,
   );
-  doc.text(textoWeb, inicioTextoWeb, baseLineFooter);
 
+  // Restaurar colores
   doc.setTextColor(...COLOR_NEGRO);
 
   y += altoFooter;
