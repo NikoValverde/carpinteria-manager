@@ -123,6 +123,8 @@ Tablas:
 - presupuestos
 - presupuesto_materiales
 - mano_obra_presupuesto
+- alternativa_presupuesto
+- perfiles
 
 La tabla perfiles mantiene acceso únicamente al usuario autenticado.
 
@@ -274,8 +276,11 @@ Feature branches:
 - feature/auth-login
 - feature/ui-cruds
 - feature/presupuesto-estados
-- feature/ia-descripciones
-- feature/pdf-profesional
+- feature/descripcion-ia
+- feature/alternativas-presupuesto
+- feature/layout-dashboard
+- feature/navbar
+- feature/materiales-inteligentes
 
 Flujo:
 
@@ -288,19 +293,6 @@ commit
 merge main
 
 ---
-
-# Roadmap
-
-## Finalizado
-
-- Auth.
-- RLS.
-- Navbar.
-- Responsive.
-- Clientes.
-- Materiales.
-- Integrantes.
-- Presupuesto Detalle.
 
 ## Esquema del proyecto
 
