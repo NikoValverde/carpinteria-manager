@@ -1,6 +1,7 @@
 import SectionCard from "../ui/SectionCard";
 import WritingAssistant from "./WritingAssistant";
 import { ClipboardList, Tag, User } from "lucide-react";
+import EstadoDropdown from "../ui/EstadoDropdown";
 
 
 function DatosGenerales({
@@ -12,9 +13,9 @@ function DatosGenerales({
   setObservaciones,
   guardarObservaciones,
   materiales,
+  estadosDisponibles,
+  onCambiarEstado,
 }) {
-
-
   return (
     <SectionCard
       title={
@@ -97,10 +98,11 @@ function DatosGenerales({
               </label>
 
               <div className="flex justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20 px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                  {presupuesto.estado}
-                </span>
+                <EstadoDropdown
+                  presupuesto={presupuesto}
+                  estadosDisponibles={estadosDisponibles}
+                  onCambiarEstado={onCambiarEstado}
+                />
               </div>
             </div>
           </div>

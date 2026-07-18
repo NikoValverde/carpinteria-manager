@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import {
   obtenerPresupuestoPorId,
   actualizarPresupuesto,
+  actualizarEstadoPresupuesto,
 } from "../../services/presupuestosService";
+
+import { PRESUPUESTO_ESTADOS } from "../../constants/presupuestoEstados";
 
 import {
   obtenerMaterialesPresupuesto,
@@ -563,7 +566,33 @@ useEffect(() => {
     }
   }
 
- 
+  async function handleCambiarEstado(nuevoEstado) {
+    const estadoAnterior = presupuesto.estado;
+
+    // Actualización optimista para reflejar el cambio sin recargar la página
+    setPresupuesto((prev) => ({ ...prev, estado: nuevoEstado }));
+
+    try {
+      await actualizarEstadoPresupuesto(id, nuevoEstado);
+    } catch (error) {
+      console.error(error);
+
+      // Si falla, se restaura el estado anterior
+      setPresupuesto((prev) => ({ ...prev, estado: estadoAnterior }));
+    }
+  }
+
+  async function guardarOpcionales() {
+    try {
+      await actualizarPresupuesto(id, {
+        opcionales,
+        precio_opcional: Number(precioOpcional) || 0,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   if (!presupuesto) {
     return <p>Cargando...</p>;
   }
@@ -583,6 +612,8 @@ useEffect(() => {
             setObservaciones={setObservaciones}
             guardarObservaciones={guardarObservaciones}
             materiales={materialesPresupuesto}
+            estadosDisponibles={PRESUPUESTO_ESTADOS}
+            onCambiarEstado={handleCambiarEstado}
           />
 
           <AlternativasPresupuesto
