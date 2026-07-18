@@ -63,3 +63,17 @@ export async function actualizarPresupuesto(id, presupuesto) {
 
   return data;
 }
+
+export async function actualizarEstadoPresupuesto(id, estado) {
+  const { data, error } = await supabase
+    .from("presupuestos")
+    .update({ estado })
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

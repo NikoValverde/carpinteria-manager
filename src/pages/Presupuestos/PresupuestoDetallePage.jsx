@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import {
   obtenerPresupuestoPorId,
   actualizarPresupuesto,
+  actualizarEstadoPresupuesto,
 } from "../../services/presupuestosService";
+
+import { PRESUPUESTO_ESTADOS } from "../../constants/presupuestoEstados";
 
 import {
   obtenerMaterialesPresupuesto,
@@ -437,6 +440,22 @@ function PresupuestoDetallePage() {
     }
   }
 
+  async function handleCambiarEstado(nuevoEstado) {
+    const estadoAnterior = presupuesto.estado;
+
+    // Actualización optimista para reflejar el cambio sin recargar la página
+    setPresupuesto((prev) => ({ ...prev, estado: nuevoEstado }));
+
+    try {
+      await actualizarEstadoPresupuesto(id, nuevoEstado);
+    } catch (error) {
+      console.error(error);
+
+      // Si falla, se restaura el estado anterior
+      setPresupuesto((prev) => ({ ...prev, estado: estadoAnterior }));
+    }
+  }
+
   async function guardarOpcionales() {
     try {
       await actualizarPresupuesto(id, {
@@ -465,6 +484,8 @@ function PresupuestoDetallePage() {
             observaciones={observaciones}
             setObservaciones={setObservaciones}
             guardarObservaciones={guardarObservaciones}
+            estadosDisponibles={PRESUPUESTO_ESTADOS}
+            onCambiarEstado={handleCambiarEstado}
           />
 
           <OpcionalesNotas

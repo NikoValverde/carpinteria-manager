@@ -4,6 +4,7 @@ import {
   crearPresupuesto,
 } from "../../services/presupuestosService";
 import { obtenerClientes } from "../../services/clientesService";
+import { obtenerEstadoPresupuesto } from "../../constants/presupuestoEstados";
 import { Link } from "react-router-dom";
 
 function PresupuestosPage() {
@@ -120,17 +121,6 @@ function PresupuestosPage() {
   });
 
   // Helpers solo visuales
-  function colorEstado(estado) {
-    const e = (estado || "").toLowerCase();
-    if (e.includes("aprob"))
-      return "bg-green-500/15 text-green-400 ring-1 ring-green-500/30";
-    if (e.includes("rechaz"))
-      return "bg-red-500/15 text-red-400 ring-1 ring-red-500/30";
-    if (e.includes("envi"))
-      return "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30";
-    return "bg-zinc-500/15 text-zinc-300 ring-1 ring-zinc-500/30";
-  }
-
   function iniciales(texto) {
     if (!texto) return "PV";
     return texto
@@ -382,13 +372,18 @@ function PresupuestosPage() {
                           {presupuesto.tipo_trabajo}
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${colorEstado(
+                          {(() => {
+                            const estado = obtenerEstadoPresupuesto(
                               presupuesto.estado
-                            )}`}
-                          >
-                            {presupuesto.estado}
-                          </span>
+                            );
+                            return (
+                              <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${estado.badgeClass}`}
+                              >
+                                {estado.label}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-white">
                           ${" "}
@@ -448,13 +443,18 @@ function PresupuestosPage() {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${colorEstado(
+                  {(() => {
+                    const estado = obtenerEstadoPresupuesto(
                       presupuesto.estado
-                    )}`}
-                  >
-                    {presupuesto.estado}
-                  </span>
+                    );
+                    return (
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${estado.badgeClass}`}
+                      >
+                        {estado.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <div className="mt-3 space-y-1.5 text-sm">
