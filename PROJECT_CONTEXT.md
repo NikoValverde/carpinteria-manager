@@ -294,22 +294,41 @@ merge main
 
 ---
 
-## Esquema del proyecto
+## Esquema del proyecto (Actualizado 20/07/2026)
 
 ┣ 📂.vscode
 ┃ ┗ 📜settings.json
-┣ 📂public
+┣ 📂dist
+┃ ┣ 📂assets
+┃ ┃ ┣ 📜html2canvas--PGk4sZF.js
+┃ ┃ ┣ 📜index-D50GRWPR.css
+┃ ┃ ┣ 📜index-DV3G3fqF.js
+┃ ┃ ┣ 📜index.es-BsTKb_j3.js
+┃ ┃ ┗ 📜purify.es-Bu4Grnl0.js
 ┃ ┣ 📜favicon.svg
 ┃ ┣ 📜icons.svg
+┃ ┣ 📜index.html
 ┃ ┣ 📜logo-valverde.png
 ┃ ┣ 📜logo-valverde1.png
 ┃ ┗ 📜logo.png
+┣ 📂public
+┃ ┣ 📜favicon.svg
+┃ ┣ 📜globe-icon.png
+┃ ┣ 📜icons.svg
+┃ ┣ 📜logo-valverde.png
+┃ ┣ 📜logo.png
+┃ ┗ 📜whatsapp-icon.png
 ┣ 📂src
 ┃ ┣ 📂assets
+┃ ┃ ┣ 📂branding
+┃ ┃ ┃ ┗ 📜presu-logo.json
 ┃ ┃ ┣ 📜hero.png
 ┃ ┃ ┣ 📜react.svg
 ┃ ┃ ┗ 📜vite.svg
 ┃ ┣ 📂components
+┃ ┃ ┣ 📂branding
+┃ ┃ ┃ ┣ 📜PresuLoader.jsx
+┃ ┃ ┃ ┗ 📜PresuLogo.jsx
 ┃ ┃ ┣ 📂Presupuestos
 ┃ ┃ ┃ ┣ 📜AlternativaCard.jsx
 ┃ ┃ ┃ ┣ 📜AlternativaModal.jsx
@@ -322,7 +341,10 @@ merge main
 ┃ ┃ ┃ ┣ 📜WritingAssistant.jsx
 ┃ ┃ ┃ ┗ 📜WritingAssistantModal.jsx
 ┃ ┃ ┗ 📂ui
+┃ ┃   ┣ 📜EstadoDropdown.jsx
 ┃ ┃   ┗ 📜SectionCard.jsx
+┃ ┣ 📂constants
+┃ ┃ ┗ 📜presupuestoEstados.js
 ┃ ┣ 📂context
 ┃ ┃ ┣ 📜AuthContext.jsx
 ┃ ┃ ┗ 📜context.js
@@ -416,9 +438,10 @@ merge main
 ┣ 📜PROJECT_CONTEXT.md
 ┣ 📜README.md
 ┣ 📜repomix-output.xml
+┣ 📜vercel.json
 ┗ 📜vite.config.js
 
----
+
 
 # Modulo AI
 
@@ -503,7 +526,98 @@ Las alternativas se imprimen únicamente si existen.
 
 Se respeta la lógica SUMA/TOTAL.
 
-### Pendientes
 
-- Mejorar paginación cuando el PDF exceda una hoja.
-- Evaluar anexos e imágenes en futuras versiones.
+## Sprint: Branding v1
+
+### Objetivo
+Se realizó el primer sprint de branding del SaaS, con el objetivo de comenzar a construir una identidad visual propia para "Presu", separándola de la identidad de Carpintería Valverde.
+
+### Cambios implementados
+
+#### Identidad visual
+- Se adopta el nombre **Presu** como marca principal del SaaS.
+- Se reemplaza "Valverde Manager" en el Login por "Presu".
+- Se incorpora el slogan inicial:
+  - *"Presupuestos profesionales, sin complicaciones."*
+
+#### Branding
+Se crea una nueva estructura dedicada al branding:
+
+src/
+├── assets/
+│   └── branding/
+│       └── presu-logo.json
+│
+└── components/
+    └── branding/
+        ├── PresuLogo.jsx
+        └── PresuLoader.jsx
+
+#### PresuLogo
+- Basado en Lottie.
+- El isotipo animado y el logotipo se separan.
+- El archivo Lottie contiene únicamente el isotipo (P).
+- El texto "Presu" se renderiza desde React para mantener máxima calidad tipográfica.
+- Se agregan props reutilizables:
+  - size
+  - speed
+  - loop
+  - autoplay
+  - className
+
+#### PresuLoader
+Se incorpora un componente reutilizable para futuros estados de carga de la aplicación.
+
+Características:
+
+- utiliza PresuLogo internamente
+- texto configurable
+- tamaño configurable
+- animación sutil mediante Framer Motion
+- completamente desacoplado del Login
+
+Actualmente queda preparado para futuros módulos como:
+
+- generación de PDF
+- asistente IA
+- Dashboard
+- cargas globales
+- splash screen
+
+### Dependencias
+
+Se incorporan:
+
+- lottie-react
+- framer-motion
+
+### Decisiones de diseño
+
+Se decidió que:
+
+- el isotipo sea el único elemento animado;
+- el texto "Presu" permanezca renderizado por React;
+- evitar logotipos completamente animados para preservar nitidez y facilitar futuras modificaciones.
+
+Esta decisión simplifica el mantenimiento del branding y mejora la calidad visual en cualquier resolución.
+
+
+## Infraestructura disponible
+
+### UI
+
+- SectionCard
+- EstadoDropdown
+
+### Branding
+
+- PresuLogo
+- PresuLoader
+
+### Constantes
+
+- presupuestoEstados.js
+
+### Servicios
+
+- actualizarEstadoPresupuesto()
