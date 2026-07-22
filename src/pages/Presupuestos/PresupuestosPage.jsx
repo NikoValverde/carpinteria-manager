@@ -2,20 +2,26 @@ import { useEffect, useState } from "react";
 import {
   obtenerPresupuestos,
   crearPresupuesto,
+  eliminarPresupuesto,
 } from "../../services/presupuestosService";
 import { obtenerClientes } from "../../services/clientesService";
 import { obtenerEstadoPresupuesto } from "../../constants/presupuestoEstados";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import SectionCard from "../../components/ui/SectionCard";
+import DeletePresupuestoModal from "./components/DeletePresupuestoModal";
 import {
+  CheckCircle2,
   DollarSign,
   Eye,
   FilePlus,
   FileText,
   Plus,
+  Clock,
   Search,
+  Trash2,
   TrendingUp,
+  XCircle,
 } from "lucide-react";
 
 // Colores para avatares (paleta cíclica compartida con la página de Integrantes)
@@ -72,6 +78,11 @@ function PresupuestosPage() {
   // Estado solo visual (no afecta la lógica ni el CRUD)
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
+  // Eliminación de presupuestos
+  const [presupuestoAEliminar, setPresupuestoAEliminar] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
+  const [toast, setToast] = useState(null);
+
   const { perfil } = useAuth();
   const usuarioNombre = perfil?.nombre || "Administrador";
 
@@ -109,6 +120,13 @@ function PresupuestosPage() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -150,6 +168,41 @@ function PresupuestosPage() {
       setMostrarFormulario(false);
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  function handleAbrirEliminar(presupuesto) {
+    setPresupuestoAEliminar(presupuesto);
+  }
+
+  function handleCancelarEliminar() {
+    if (eliminando) return;
+    setPresupuestoAEliminar(null);
+  }
+
+  async function handleConfirmarEliminar() {
+    if (!presupuestoAEliminar) return;
+
+    setEliminando(true);
+
+    try {
+      await eliminarPresupuesto(presupuestoAEliminar.id);
+
+      setPresupuestoAEliminar(null);
+      setToast({
+        tipo: "exito",
+        mensaje: "Presupuesto eliminado correctamente.",
+      });
+
+      await cargarPresupuestos();
+    } catch (error) {
+      console.error(error);
+      setToast({
+        tipo: "error",
+        mensaje: "No se pudo eliminar el presupuesto. Intentá nuevamente.",
+      });
+    } finally {
+      setEliminando(false);
     }
   }
 
@@ -337,7 +390,7 @@ function PresupuestosPage() {
         <SectionCard
           title={
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Listado de Presupuestos
               </span>
 
@@ -398,73 +451,88 @@ function PresupuestosPage() {
                           coloresAvatar[index % coloresAvatar.length];
                         const fecha = obtenerFechaLegible(presupuesto);
                         return (
-                        <tr
-                          key={presupuesto.id}
-                          className="align-middle transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
-                        >
-                          <td className="px-4 py-3">
-                            <span className="font-semibold text-zinc-900 dark:text-white">
-                              {presupuesto.numero}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-200">
-                            {presupuesto.titulo}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span
-                              title={presupuesto.categoria_trabajo}
-                              className="inline-flex max-w-[10rem] items-center truncate rounded-md bg-orange-500/10 px-2 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20"
-                            >
-                              {presupuesto.categoria_trabajo}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2.5">
+                          <tr
+                            key={presupuesto.id}
+                            className="align-middle transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                          >
+                            <td className="px-4 py-3">
+                              <span className="font-semibold text-zinc-900 dark:text-white">
+                                {presupuesto.numero}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-zinc-700 dark:text-zinc-200">
+                              {presupuesto.titulo}
+                            </td>
+                            <td className="px-4 py-3">
                               <span
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${color.bg} ${color.text}`}
+                                title={presupuesto.categoria_trabajo}
+                                className="inline-flex max-w-[10rem] items-center truncate rounded-md bg-orange-500/10 px-2 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20"
                               >
-                                {obtenerIniciales(presupuesto.clientes?.nombre)}
+                                {presupuesto.categoria_trabajo}
                               </span>
-                              <span className="text-zinc-700 dark:text-zinc-200">
-                                {presupuesto.clientes?.nombre}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                            {presupuesto.tipo_trabajo}
-                          </td>
-                          <td className="px-4 py-3">
-                            {(() => {
-                              const estado = obtenerEstadoPresupuesto(
-                                presupuesto.estado
-                              );
-                              return (
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
                                 <span
-                                  className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium leading-none ${estado.badgeClass}`}
+                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${color.bg} ${color.text}`}
                                 >
-                                  {estado.label}
+                                  {obtenerIniciales(
+                                    presupuesto.clientes?.nombre,
+                                  )}
                                 </span>
-                              );
-                            })()}
-                          </td>
-                          <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
-                            {fecha || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-right font-semibold tabular-nums text-zinc-900 dark:text-white">
-                            ${Number(presupuesto.precio_final || 0).toLocaleString(
-                              "es-AR"
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <Link
-                              to={`/presupuestos/${presupuesto.id}`}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            >
-                              <Eye size={14} aria-hidden="true" />
-                              Ver
-                            </Link>
-                          </td>
-                        </tr>
+                                <span className="text-zinc-700 dark:text-zinc-200">
+                                  {presupuesto.clientes?.nombre}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                              {presupuesto.tipo_trabajo}
+                            </td>
+                            <td className="px-4 py-3">
+                              {(() => {
+                                const estado = obtenerEstadoPresupuesto(
+                                  presupuesto.estado,
+                                );
+                                return (
+                                  <span
+                                    className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium leading-none ${estado.badgeClass}`}
+                                  >
+                                    {estado.label}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                            <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                              {fecha || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-right font-semibold tabular-nums text-zinc-900 dark:text-white">
+                              $
+                              {Number(
+                                presupuesto.precio_final || 0,
+                              ).toLocaleString("es-AR")}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Link
+                                  to={`/presupuestos/${presupuesto.id}`}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                >
+                                  <Eye size={14} aria-hidden="true" />
+                                  Ver
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleAbrirEliminar(presupuesto)
+                                  }
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 dark:border-red-900/60 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40"
+                                >
+                                  <Trash2 size={14} aria-hidden="true" />
+                                  Eliminar
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
                         );
                       })
                     )}
@@ -484,82 +552,91 @@ function PresupuestosPage() {
                   const color = coloresAvatar[index % coloresAvatar.length];
                   const fecha = obtenerFechaLegible(presupuesto);
                   return (
-                  <div
-                    key={presupuesto.id}
-                    className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${color.bg} ${color.text}`}
-                        >
-                          {obtenerIniciales(presupuesto.clientes?.nombre)}
-                        </span>
-                        <div>
-                          <p className="font-semibold text-zinc-900 dark:text-white">
-                            {presupuesto.numero}
-                          </p>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            {presupuesto.clientes?.nombre}
-                          </p>
-                        </div>
-                      </div>
-                      {(() => {
-                        const estado = obtenerEstadoPresupuesto(
-                          presupuesto.estado
-                        );
-                        return (
+                    <div
+                      key={presupuesto.id}
+                      className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
                           <span
-                            className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium leading-none ${estado.badgeClass}`}
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${color.bg} ${color.text}`}
                           >
-                            {estado.label}
+                            {obtenerIniciales(presupuesto.clientes?.nombre)}
                           </span>
-                        );
-                      })()}
-                    </div>
+                          <div>
+                            <p className="font-semibold text-zinc-900 dark:text-white">
+                              {presupuesto.numero}
+                            </p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              {presupuesto.clientes?.nombre}
+                            </p>
+                          </div>
+                        </div>
+                        {(() => {
+                          const estado = obtenerEstadoPresupuesto(
+                            presupuesto.estado,
+                          );
+                          return (
+                            <span
+                              className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium leading-none ${estado.badgeClass}`}
+                            >
+                              {estado.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
 
-                    <div className="mt-3 space-y-1.5 text-sm">
-                      <p className="text-zinc-700 dark:text-zinc-200">
-                        <span className="text-zinc-500">Título: </span>
-                        {presupuesto.titulo}
-                      </p>
-                      <p>
-                        <span className="text-zinc-500">Categoría: </span>
-                        <span
-                          title={presupuesto.categoria_trabajo}
-                          className="inline-flex max-w-[12rem] items-center truncate rounded-md bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20 align-middle"
+                      <div className="mt-3 space-y-1.5 text-sm">
+                        <p className="text-zinc-700 dark:text-zinc-200">
+                          <span className="text-zinc-500">Título: </span>
+                          {presupuesto.titulo}
+                        </p>
+                        <p>
+                          <span className="text-zinc-500">Categoría: </span>
+                          <span
+                            title={presupuesto.categoria_trabajo}
+                            className="inline-flex max-w-[12rem] items-center truncate rounded-md bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20 align-middle"
+                          >
+                            {presupuesto.categoria_trabajo}
+                          </span>
+                        </p>
+                        <p className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-zinc-500">Tipo: </span>
+                          {presupuesto.tipo_trabajo}
+                        </p>
+                        <p className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-zinc-500">Fecha: </span>
+                          {fecha || "—"}
+                        </p>
+                        <p className="font-semibold tabular-nums text-zinc-900 dark:text-white">
+                          <span className="font-normal text-zinc-500">
+                            Precio Final:{" "}
+                          </span>
+                          $
+                          {Number(presupuesto.precio_final || 0).toLocaleString(
+                            "es-AR",
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Link
+                          to={`/presupuestos/${presupuesto.id}`}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         >
-                          {presupuesto.categoria_trabajo}
-                        </span>
-                      </p>
-                      <p className="text-zinc-500 dark:text-zinc-400">
-                        <span className="text-zinc-500">Tipo: </span>
-                        {presupuesto.tipo_trabajo}
-                      </p>
-                      <p className="text-zinc-500 dark:text-zinc-400">
-                        <span className="text-zinc-500">Fecha: </span>
-                        {fecha || "—"}
-                      </p>
-                      <p className="font-semibold tabular-nums text-zinc-900 dark:text-white">
-                        <span className="font-normal text-zinc-500">
-                          Precio Final:{" "}
-                        </span>
-                        ${Number(presupuesto.precio_final || 0).toLocaleString(
-                          "es-AR"
-                        )}
-                      </p>
+                          <Eye size={14} aria-hidden="true" />
+                          Ver
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleAbrirEliminar(presupuesto)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 dark:border-red-900/60 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40"
+                        >
+                          <Trash2 size={14} aria-hidden="true" />
+                          Eliminar
+                        </button>
+                      </div>
                     </div>
-
-                    <div className="mt-3 flex justify-end">
-                      <Link
-                        to={`/presupuestos/${presupuesto.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      >
-                        <Eye size={14} aria-hidden="true" />
-                        Ver
-                      </Link>
-                    </div>
-                  </div>
                   );
                 })
               )}
@@ -571,13 +648,42 @@ function PresupuestosPage() {
                 {presupuestosFiltrados.length} de {presupuestos.length}{" "}
                 presupuestos mostrados
               </span>
-              <span>
-                Actualizado el {fechaActualizacion} · por {usuarioNombre}
+              <span className="flex items-center gap-1.5 text-zinc-400 dark:text-zinc-500 sm:justify-end">
+                <Clock size={12} className="text-zinc-400" />
+                Última actualización: {fechaActualizacion} · por {usuarioNombre}
               </span>
             </div>
           </div>
         </SectionCard>
       </div>
+
+      {/* Toast de feedback */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div
+            className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium shadow-lg ${
+              toast.tipo === "exito"
+                ? "border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400"
+                : "border-red-200 dark:border-red-900/60 bg-white dark:bg-zinc-900 text-red-600 dark:text-red-400"
+            }`}
+          >
+            {toast.tipo === "exito" ? (
+              <CheckCircle2 size={16} aria-hidden="true" />
+            ) : (
+              <XCircle size={16} aria-hidden="true" />
+            )}
+            {toast.mensaje}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      <DeletePresupuestoModal
+        presupuesto={presupuestoAEliminar}
+        isDeleting={eliminando}
+        onCancel={handleCancelarEliminar}
+        onConfirm={handleConfirmarEliminar}
+      />
     </div>
   );
 }

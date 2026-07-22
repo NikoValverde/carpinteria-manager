@@ -621,3 +621,14 @@ Esta decisión simplifica el mantenimiento del branding y mejora la calidad visu
 ### Servicios
 
 - actualizarEstadoPresupuesto()
+
+### Backlog
+
+- Sprint futuro
+
+Sistema global de notificaciones
+
+- Success
+- Error
+- Warning
+- Info

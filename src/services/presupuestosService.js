@@ -83,3 +83,13 @@ export async function actualizarEstadoPresupuesto(id, estado) {
 
   return data;
 }
+
+export async function eliminarPresupuesto(id) {
+  const { error } = await supabase.from("presupuestos").delete().eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+}
