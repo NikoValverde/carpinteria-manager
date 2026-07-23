@@ -9,6 +9,8 @@ import {
 
 import { PRESUPUESTO_ESTADOS } from "../../constants/presupuestoEstados";
 
+import { calcularResumenFinanciero } from "../../domain/presupuesto/finanzas";
+
 import {
   obtenerMaterialesPresupuesto,
   agregarMaterialPresupuesto,
@@ -81,6 +83,10 @@ function PresupuestoDetallePage() {
   const [porcentajeGanancia, setPorcentajeGanancia] = useState(35);
   const [descripcion, setDescripcion] = useState("");
   const [flete, setFlete] = useState(0);
+
+  // Estado para el descuento (se aplica siempre sobre el Precio Final)
+  const [descuentoTipo, setDescuentoTipo] = useState("porcentaje");
+  const [descuentoValor, setDescuentoValor] = useState("");
 
   async function cargarMaterialesPresupuesto() {
     try {
@@ -195,6 +201,12 @@ useEffect(() => {
         {/*setNotasInternas(data.notas_internas || "");*/}
         setOpcionales(data.opcionales || "");
         setPrecioOpcional(data.precio_opcional || 0);
+        setDescuentoTipo(data.descuento_tipo || "porcentaje");
+        setDescuentoValor(
+          data.descuento_valor !== null && data.descuento_valor !== undefined
+            ? data.descuento_valor
+            : "",
+        );
       } catch (error) {
         console.error(error);
       }
@@ -415,25 +427,37 @@ useEffect(() => {
     0,
   );
 
-  const costoTotal =
-    costoMateriales + costoManoObra + Number(consumiblesImprevistos || 0);
+  // Única fuente de verdad de las fórmulas financieras (dominio):
+  // costos -> ganancia -> precio de trabajo -> descuento sobre el Precio Final.
+  const resumenFinanciero = calcularResumenFinanciero({
+    costoMateriales,
+    costoManoObra,
+    consumiblesImprevistos,
+    porcentajeGanancia,
+    flete,
+    precioFinal,
+    descuentoTipo,
+    descuentoValor,
+  });
 
-  const montoGanancia = costoTotal * (Number(porcentajeGanancia) / 100);
-
-  // Valor del trabajo con flete
-  const precioTrabajo = costoTotal + montoGanancia + Number(flete || 0);
+  const {
+    costoTotal,
+    montoGanancia,
+    precioTrabajo,
+    diferenciaPrecio,
+    precioDesactualizado,
+    descuentoAplicado,
+    descuentoValorNumerico,
+    precioFinalConDescuento,
+    errorDescuento,
+  } = resumenFinanciero;
 
   const totalConOpcional =
     Number(precioFinal || 0) + Number(precioOpcional || 0);
 
-  const diferenciaPrecio =
-    Number(precioFinal || 0) - Number(precioTrabajo || 0);
-
-  const precioDesactualizado = diferenciaPrecio !== 0;
-
   async function guardarResumenFinanciero() {
     try {
-      await actualizarPresupuesto(id, {
+      const payload = {
         precio_final: Number(precioFinal) || 0,
 
         flete: Number(flete) || 0,
@@ -445,7 +469,20 @@ useEffect(() => {
         precio_trabajo: Number(precioTrabajo) || 0,
 
         consumibles_imprevistos: Number(consumiblesImprevistos) || 0,
-      });
+      };
+
+      // Mientras el descuento sea inválido, no se persiste (se impide guardar)
+      if (!errorDescuento) {
+        payload.descuento_tipo = descuentoAplicado ? descuentoTipo : null;
+        payload.descuento_valor = descuentoAplicado
+          ? descuentoValorNumerico
+          : null;
+        payload.precio_final_con_descuento = descuentoAplicado
+          ? precioFinalConDescuento
+          : null;
+      }
+
+      await actualizarPresupuesto(id, payload);
     } catch (error) {
       console.error(error);
     }
@@ -467,27 +504,28 @@ useEffect(() => {
         0,
       );
 
-      const costoTotalActualizado =
-        costoMaterialesActualizado +
-        costoManoObraActualizado +
-        Number(consumiblesImprevistos || 0);
-
-      const montoGananciaActualizado =
-        costoTotalActualizado * (Number(porcentajeGanancia) / 100);
-
-      const precioTrabajoActualizado =
-        costoTotalActualizado + montoGananciaActualizado + Number(flete || 0);
+      // Misma fórmula que en el render: no se reimplementa acá, se reutiliza el dominio.
+      const resumenActualizado = calcularResumenFinanciero({
+        costoMateriales: costoMaterialesActualizado,
+        costoManoObra: costoManoObraActualizado,
+        consumiblesImprevistos,
+        porcentajeGanancia,
+        flete,
+        precioFinal,
+        descuentoTipo,
+        descuentoValor,
+      });
 
       await actualizarPresupuesto(id, {
         costo_materiales: costoMaterialesActualizado,
 
         costo_mano_obra: costoManoObraActualizado,
 
-        costo_total: costoTotalActualizado,
+        costo_total: resumenActualizado.costoTotal,
 
-        monto_ganancia: montoGananciaActualizado,
+        monto_ganancia: resumenActualizado.montoGanancia,
 
-        precio_trabajo: precioTrabajoActualizado,
+        precio_trabajo: resumenActualizado.precioTrabajo,
       });
     } catch (error) {
       console.error(error);
@@ -514,6 +552,12 @@ useEffect(() => {
       {/*setNotasInternas(data.notas_internas || "");*/}
       setOpcionales(data.opcionales || "");
       setPrecioOpcional(data.precio_opcional || 0);
+      setDescuentoTipo(data.descuento_tipo || "porcentaje");
+      setDescuentoValor(
+        data.descuento_valor !== null && data.descuento_valor !== undefined
+          ? data.descuento_valor
+          : "",
+      );
     } catch (error) {
       console.error(error);
     }
@@ -620,6 +664,9 @@ useEffect(() => {
             presupuestoId={id}
             alternativas={alternativas}
             setAlternativas={setAlternativas}
+            precioFinal={precioFinal}
+            descuentoTipo={descuentoTipo}
+            descuentoValor={descuentoValor}
           />
 
           <MaterialesPresupuesto
@@ -698,6 +745,12 @@ useEffect(() => {
             guardarResumenFinanciero={guardarResumenFinanciero}
             aplicarPrecioFinal={aplicarPrecioFinal}
             alternativas={alternativas}
+            descuentoTipo={descuentoTipo}
+            setDescuentoTipo={setDescuentoTipo}
+            descuentoValor={descuentoValor}
+            setDescuentoValor={setDescuentoValor}
+            errorDescuento={errorDescuento}
+            precioFinalConDescuento={precioFinalConDescuento}
           />
         </div>
       </div>

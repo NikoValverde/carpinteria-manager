@@ -1,5 +1,14 @@
 import SectionCard from "../ui/SectionCard";
-import { Truck, Percent, Layers, Copy, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Truck,
+  Percent,
+  Layers,
+  Copy,
+  TrendingUp,
+  AlertTriangle,
+  BadgePercent,
+  Wallet,
+} from "lucide-react";
 
 
 function redondear(valor, multiplo) {
@@ -29,6 +38,12 @@ function ResumenFinanciero({
   guardarResumenFinanciero,
   aplicarPrecioFinal,
   alternativas,
+  descuentoTipo,
+  setDescuentoTipo,
+  descuentoValor,
+  setDescuentoValor,
+  errorDescuento,
+  precioFinalConDescuento,
 }) {
   // Proporciones visuales de la barra de distribución de costos.
   // Es un valor puramente de presentación derivado de los props existentes;
@@ -289,6 +304,77 @@ function ResumenFinanciero({
               className="w-full bg-transparent text-3xl font-bold text-orange-600 dark:text-orange-400 outline-none text-center"
             />
           </div>
+        </div>
+
+        {/* Descuento (se aplica sobre el Precio Final) */}
+        <div className="space-y-2 pt-1">
+          <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <BadgePercent size={12} />
+            Descuento
+          </label>
+
+          <div className="flex items-center gap-2">
+            {/* Segmented control: % / $ */}
+            <div className="inline-flex shrink-0 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-1">
+              <button
+                type="button"
+                onClick={() => setDescuentoTipo("porcentaje")}
+                aria-pressed={descuentoTipo === "porcentaje"}
+                className={`rounded-md px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                  descuentoTipo === "porcentaje"
+                    ? "bg-orange-600 text-white shadow-sm"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                }`}
+              >
+                %
+              </button>
+              <button
+                type="button"
+                onClick={() => setDescuentoTipo("monto")}
+                aria-pressed={descuentoTipo === "monto"}
+                className={`rounded-md px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                  descuentoTipo === "monto"
+                    ? "bg-orange-600 text-white shadow-sm"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                }`}
+              >
+                $
+              </button>
+            </div>
+
+            {/* Valor del descuento: un único input, cambia placeholder según el tipo */}
+            <input
+              type="number"
+              inputMode="decimal"
+              value={descuentoValor}
+              onChange={(e) => setDescuentoValor(e.target.value)}
+              onBlur={guardarResumenFinanciero}
+              placeholder={descuentoTipo === "monto" ? "50000" : "10"}
+              aria-invalid={Boolean(errorDescuento)}
+              className={`w-full rounded-lg border bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors ${
+                errorDescuento
+                  ? "border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                  : "border-zinc-300 dark:border-zinc-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              }`}
+            />
+          </div>
+
+          {errorDescuento && (
+            <p className="text-xs font-medium text-red-500">
+              {errorDescuento}
+            </p>
+          )}
+        </div>
+
+        {/* TOTAL A COBRAR */}
+        <div className="flex items-center justify-between rounded-xl border-2 border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3.5">
+          <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+            <Wallet size={16} />
+            Total a Cobrar
+          </span>
+          <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+            {formatoMoneda(precioFinalConDescuento)}
+          </span>
         </div>
 
         {/* Alternativas de Trabajo */}

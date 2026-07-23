@@ -11,10 +11,19 @@ import {
   eliminarAlternativa,
 } from "../../services/alternativasService";
 
+import { calcularResumenFinanciero } from "../../domain/presupuesto/finanzas";
+
+function formatoMoneda(valor) {
+  return `$${Number(valor || 0).toLocaleString("es-AR")}`;
+}
+
 export default function AlternativasPresupuesto({
   presupuestoId,
   alternativas,
   setAlternativas,
+  precioFinal,
+  descuentoTipo,
+  descuentoValor,
 }) {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [alternativaEditando, setAlternativaEditando] = useState(null);
@@ -48,6 +57,30 @@ export default function AlternativasPresupuesto({
   function handleCerrarModal() {
     setModalAbierto(false);
     setAlternativaEditando(null);
+  }
+
+  // El descuento pertenece al presupuesto, no a la alternativa: se reutiliza
+  // el mismo dominio financiero para no reimplementar la fórmula acá.
+  // SUMA -> el precio de la alternativa se suma al Precio Final.
+  // TOTAL -> el precio de la alternativa reemplaza al Precio Final.
+  function calcularTotalAlternativa(alternativa) {
+    const precioFinalAlternativa =
+      alternativa.tipo_precio === "SUMA"
+        ? Number(precioFinal || 0) + Number(alternativa.precio || 0)
+        : Number(alternativa.precio || 0);
+
+    const { precioFinalConDescuento } = calcularResumenFinanciero({
+      costoMateriales: 0,
+      costoManoObra: 0,
+      consumiblesImprevistos: 0,
+      porcentajeGanancia: 0,
+      flete: 0,
+      precioFinal: precioFinalAlternativa,
+      descuentoTipo,
+      descuentoValor,
+    });
+
+    return precioFinalConDescuento;
   }
 
   async function handleGuardarAlternativa(datosFormulario) {
@@ -113,12 +146,22 @@ export default function AlternativasPresupuesto({
       ) : (
         <div className="space-y-3">
           {alternativas.map((alternativa) => (
-            <AlternativaCard
-              key={alternativa.id}
-              alternativa={alternativa}
-              onEditar={handleEditarAlternativa}
-              onEliminar={handleEliminarAlternativa}
-            />
+            <div key={alternativa.id} className="space-y-2">
+              <AlternativaCard
+                alternativa={alternativa}
+                onEditar={handleEditarAlternativa}
+                onEliminar={handleEliminarAlternativa}
+              />
+
+              <div className="flex items-center justify-between rounded-lg bg-zinc-100 dark:bg-zinc-800/60 px-3 py-2">
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  Total a cobrar con esta alternativa
+                </span>
+                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatoMoneda(calcularTotalAlternativa(alternativa))}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
       )}
