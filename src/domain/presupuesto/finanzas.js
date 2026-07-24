@@ -96,12 +96,34 @@ function calcularDescuento({ precioFinal, descuentoTipo, descuentoValor }) {
   };
 }
 
+// El descuento pertenece siempre al presupuesto, nunca a la alternativa.
+// Una alternativa solo decide CUÁL es el Precio Final que debe usarse como base:
+// - SUMA: el precio de la alternativa se suma al Precio Final del presupuesto.
+// - TOTAL (cualquier otro valor de tipo_precio): el precio de la alternativa
+//   reemplaza por completo al Precio Final del presupuesto.
+function calcularPrecioFinalAlternativa({ precioFinal, alternativa }) {
+  if (!alternativa) {
+    return Number(precioFinal || 0);
+  }
+
+  return alternativa.tipo_precio === "SUMA"
+    ? Number(precioFinal || 0) + Number(alternativa.precio || 0)
+    : Number(alternativa.precio || 0);
+}
+
 /**
  * Única función pública del dominio financiero del presupuesto.
  *
  * Recibe todos los datos necesarios y devuelve un único objeto con todos
  * los resultados financieros derivados: costos, ganancia, precio de trabajo
  * y descuento sobre el Precio Final.
+ *
+ * Parámetro opcional `alternativa` ({ tipo_precio, precio }): si se provee,
+ * el descuento del presupuesto se calcula sobre el Precio Final que resulte
+ * de esa alternativa (regla SUMA/TOTAL) en lugar de sobre `precioFinal` tal
+ * cual. `costoTotal`, `montoGanancia`, `precioTrabajo`, `diferenciaPrecio` y
+ * `precioDesactualizado` siguen siendo los del presupuesto y no se ven
+ * afectados por la alternativa.
  */
 export function calcularResumenFinanciero({
   costoMateriales,
@@ -112,6 +134,7 @@ export function calcularResumenFinanciero({
   precioFinal,
   descuentoTipo,
   descuentoValor,
+  alternativa,
 }) {
   const costoTotal = calcularCostoTotal({
     costoMateriales,
@@ -130,13 +153,22 @@ export function calcularResumenFinanciero({
   const diferenciaPrecio = Number(precioFinal || 0) - Number(precioTrabajo || 0);
   const precioDesactualizado = diferenciaPrecio !== 0;
 
+  const precioFinalEfectivo = calcularPrecioFinalAlternativa({
+    precioFinal,
+    alternativa,
+  });
+
   const {
     errorDescuento,
     descuentoAplicado,
     descuentoValorNumerico,
     montoDescuento,
     precioFinalConDescuento,
-  } = calcularDescuento({ precioFinal, descuentoTipo, descuentoValor });
+  } = calcularDescuento({
+    precioFinal: precioFinalEfectivo,
+    descuentoTipo,
+    descuentoValor,
+  });
 
   return {
     costoTotal,
@@ -144,6 +176,7 @@ export function calcularResumenFinanciero({
     precioTrabajo,
     diferenciaPrecio,
     precioDesactualizado,
+    precioFinalEfectivo,
     descuentoAplicado,
     descuentoValorNumerico,
     montoDescuento,

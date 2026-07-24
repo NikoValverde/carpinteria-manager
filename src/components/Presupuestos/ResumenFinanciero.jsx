@@ -10,6 +10,8 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { calcularResumenFinanciero } from "../../domain/presupuesto/finanzas";
+
 
 function redondear(valor, multiplo) {
   return Math.ceil(valor / multiplo) * multiplo;
@@ -343,39 +345,63 @@ function ResumenFinanciero({
             </div>
 
             {/* Valor del descuento: un único input, cambia placeholder según el tipo */}
-            <input
-              type="number"
-              inputMode="decimal"
-              value={descuentoValor}
-              onChange={(e) => setDescuentoValor(e.target.value)}
-              onBlur={guardarResumenFinanciero}
-              placeholder={descuentoTipo === "monto" ? "50000" : "10"}
-              aria-invalid={Boolean(errorDescuento)}
-              className={`w-full rounded-lg border bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors ${
-                errorDescuento
-                  ? "border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                  : "border-zinc-300 dark:border-zinc-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-              }`}
-            />
+            <div className="relative w-full">
+              {descuentoTipo === "monto" && Number(descuentoValor) > 0 && (
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-zinc-400">
+                  $
+                </span>
+              )}
+              <input
+                type="text"
+                inputMode="decimal"
+                value={
+                  descuentoTipo === "monto" && Number(descuentoValor) > 0
+                    ? Number(descuentoValor).toLocaleString("es-AR")
+                    : descuentoValor
+                }
+                onChange={(e) => {
+                  if (descuentoTipo === "monto") {
+                    const valorLimpio = e.target.value
+                      .replace(/\./g, "")
+                      .replace(/[^0-9]/g, "");
+                    setDescuentoValor(valorLimpio);
+                  } else {
+                    setDescuentoValor(e.target.value);
+                  }
+                }}
+                onBlur={guardarResumenFinanciero}
+                placeholder={descuentoTipo === "monto" ? "50.000" : "10"}
+                aria-invalid={Boolean(errorDescuento)}
+                className={`w-full rounded-lg border bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition-colors ${
+                  descuentoTipo === "monto" && Number(descuentoValor) > 0
+                    ? "pl-7"
+                    : "pl-3"
+                } ${
+                  errorDescuento
+                    ? "border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    : "border-zinc-300 dark:border-zinc-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                }`}
+              />
+            </div>
           </div>
 
           {errorDescuento && (
-            <p className="text-xs font-medium text-red-500">
-              {errorDescuento}
-            </p>
+            <p className="text-xs font-medium text-red-500">{errorDescuento}</p>
           )}
         </div>
 
-        {/* TOTAL A COBRAR */}
-        <div className="flex items-center justify-between rounded-xl border-2 border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3.5">
-          <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-            <Wallet size={16} />
-            Total a Cobrar
-          </span>
-          <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-            {formatoMoneda(precioFinalConDescuento)}
-          </span>
-        </div>
+        {/* TOTAL A COBRAR - Solo aparece cuando hay descuento aplicado */}
+        {Number(descuentoValor) > 0 && (
+          <div className="flex items-center justify-between rounded-xl border-2 border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3.5">
+            <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+              <Wallet size={16} />
+              Total a Cobrar
+            </span>
+            <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+              {formatoMoneda(precioFinalConDescuento)}
+            </span>
+          </div>
+        )}
 
         {/* Alternativas de Trabajo */}
         {alternativas.length > 0 && (
@@ -392,41 +418,73 @@ function ResumenFinanciero({
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                   Alternativas de Trabajo
                 </p>
-                
               </div>
             </div>
 
             {/* Detalle económico por alternativa */}
             <div className="mt-3 divide-y divide-blue-200/70 dark:divide-blue-800/40">
-              {alternativas.map((alternativa) => (
-                <div key={alternativa.id} className="py-3 first:pt-0 last:pb-0">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {alternativa.titulo}
-                  </p>
+              {alternativas.map((alternativa) => {
+                // El descuento pertenece al presupuesto, no a la alternativa:
+                // se reutiliza el mismo dominio financiero (misma función que
+                // calcula el Total a Cobrar de arriba), pasándole la
+                // alternativa para que resuelva el Precio Final efectivo
+                // (SUMA/TOTAL) antes de aplicar el descuento. No se
+                // reimplementa ninguna fórmula acá.
+                const { precioFinalEfectivo, precioFinalConDescuento } =
+                  calcularResumenFinanciero({
+                    costoMateriales: 0,
+                    costoManoObra: 0,
+                    consumiblesImprevistos: 0,
+                    porcentajeGanancia: 0,
+                    flete: 0,
+                    precioFinal,
+                    descuentoTipo,
+                    descuentoValor,
+                    alternativa,
+                  });
 
-                  <div className="mt-1.5 flex items-center justify-between">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Precio Alternativa
-                    </span>
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatoMoneda(alternativa.precio)}
-                    </span>
-                  </div>
+                const esSuma = alternativa.tipo_precio === "SUMA";
 
-                  {alternativa.tipo_precio === "SUMA" && (
+                return (
+                  <div
+                    key={alternativa.id}
+                    className="py-3 first:pt-0 last:pb-0"
+                  >
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      {alternativa.titulo}
+                    </p>
+
+                    {esSuma && (
+                      <div className="mt-1.5 flex items-center justify-between">
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          Precio Alternativa
+                        </span>
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          {formatoMoneda(alternativa.precio)}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="mt-1 flex items-center justify-between">
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Precio Final + Alternativa
+                        Precio Final
                       </span>
-                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                        {formatoMoneda(
-                          Number(precioFinal || 0) + Number(alternativa.precio || 0),
-                        )}
+                      <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {formatoMoneda(precioFinalEfectivo)}
                       </span>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Total con descuento
+                      </span>
+                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        {formatoMoneda(precioFinalConDescuento)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

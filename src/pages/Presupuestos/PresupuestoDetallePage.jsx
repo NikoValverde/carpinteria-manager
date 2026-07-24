@@ -664,9 +664,6 @@ useEffect(() => {
             presupuestoId={id}
             alternativas={alternativas}
             setAlternativas={setAlternativas}
-            precioFinal={precioFinal}
-            descuentoTipo={descuentoTipo}
-            descuentoValor={descuentoValor}
           />
 
           <MaterialesPresupuesto
@@ -715,6 +712,8 @@ useEffect(() => {
                   precioOpcional,
                   totalConOpcional,
                   alternativas,
+                  descuentoTipo,
+                  descuentoValor,
                 })
               }
             >

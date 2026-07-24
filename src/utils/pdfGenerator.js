@@ -1,16 +1,47 @@
 import jsPDF from "jspdf";
 
+import { calcularResumenFinanciero } from "../domain/presupuesto/finanzas";
+
 // ---- Paleta de colores institucional (únicos colores permitidos) ----
 const COLOR_GRIS_OSCURO = [44, 52, 64];
 const COLOR_GRIS_BORDE = [170, 170, 170];
 const COLOR_BLANCO = [255, 255, 255];
 const COLOR_NEGRO = [0, 0, 0];
 const COLOR_NARANJA = [234, 88, 12];
+// Único agregado de paleta para esta mejora: tratamiento sutil y discreto
+// de la línea de descuento (verde grisáceo oscuro, no compite con el naranja).
+const COLOR_VERDE_DESCUENTO = [63, 107, 89];
 
 // Helper de formato visual de precios: unifica "$ " + separador de miles.
 // Solo cambia el TEXTO mostrado, nunca el valor numérico ni los cálculos.
 function formatearPrecio(valor) {
   return `$ ${Number(valor || 0).toLocaleString("es-AR")}`;
+}
+
+// Función auxiliar para dibujar una flecha hacia abajo estilizada
+// (no un triángulo simple, sino una flecha común con asta y punta)
+function dibujarFlechaAbajo(doc, x, y, tamaño = 3) {
+  y = y + 1;
+  const mitad = tamaño / 2;
+  const asta = tamaño * 0.6;
+  
+  doc.setFillColor(...COLOR_VERDE_DESCUENTO);
+  doc.setDrawColor(...COLOR_VERDE_DESCUENTO);
+  doc.setLineWidth(0.3);
+  
+  // Línea vertical (asta) - centrada exactamente en el punto medio
+  doc.line(x, y - asta * 0.5, x, y + asta * 0.4);
+  
+  // Triángulo (punta de la flecha) - centrado en la parte inferior
+  doc.triangle(
+    x - mitad, y + asta * 0.2,
+    x + mitad, y + asta * 0.2,
+    x, y + asta * 0.9,
+    "F"
+  );
+  
+  doc.setDrawColor(...COLOR_NEGRO);
+  doc.setFillColor(...COLOR_NEGRO);
 }
 
 // Función auxiliar: convierte una imagen cargada por fetch a base64
@@ -126,7 +157,16 @@ function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
 // discretos y el naranja se reserva exclusivamente para los importes,
 // igual que en el resto del documento. La lógica de cálculo (SUMA/TOTAL)
 // no se modifica: esto solo cambia cómo se presenta cada valor.
-function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
+function dibujarAlternativas(
+  doc,
+  x,
+  y,
+  ancho,
+  alternativas,
+  precioFinal,
+  descuentoTipo,
+  descuentoValor,
+) {
   const altoBarraTitulo = 6;
 
   doc.setFillColor(...COLOR_GRIS_OSCURO);
@@ -156,6 +196,9 @@ function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
 
   const yInicioFilas = y + altoBarraTitulo;
   const altoFilaAlternativa = 13;
+  // Alto adicional que ocupa la línea intermedia del descuento. Una fila sin
+  // descuento conserva exactamente los 13mm de siempre.
+  const altoExtraFilaDescuento = 7;
 
   let yCursor = yInicioFilas;
 
@@ -170,70 +213,157 @@ function dibujarAlternativas(doc, x, y, ancho, alternativas, precioFinal) {
       doc.setDrawColor(...COLOR_NEGRO);
     }
 
-    const yTextoMedio = yFila + altoFilaAlternativa / 2;
+    const esSuma = alternativa.tipo_precio === "SUMA";
 
-    // Título de la alternativa: primer elemento que se lee, negrita,
-    // tamaño ligeramente superior, gris grafito (sin columna de índice).
+    // Calcular si hay descuento para esta alternativa
+    const {
+      descuentoAplicado,
+      precioFinalEfectivo,
+      precioFinalConDescuento,
+      montoDescuento,
+      descuentoValorNumerico,
+    } = calcularResumenFinanciero({
+      costoMateriales: 0,
+      costoManoObra: 0,
+      consumiblesImprevistos: 0,
+      porcentajeGanancia: 0,
+      flete: 0,
+      precioFinal,
+      descuentoTipo,
+      descuentoValor,
+      alternativa,
+    });
+
+    const altoFila = descuentoAplicado
+      ? altoFilaAlternativa + altoExtraFilaDescuento
+      : altoFilaAlternativa;
+
+    // ===== COLUMNA 1: TÍTULO (alineado a la izquierda, centrado verticalmente) =====
+    const yCentroFila = yFila + altoFila / 2;
+    
     doc.setFontSize(10.5);
     doc.setFont(undefined, "bold");
     doc.setTextColor(...COLOR_GRIS_OSCURO);
-    doc.text(alternativa.titulo || "", xColTitulo + 4, yTextoMedio + 1);
+    doc.text(alternativa.titulo || "", xColTitulo + 4, yCentroFila + 1, {
+      align: "left",
+    });
     doc.setFont(undefined, "normal");
 
-    const esSuma = alternativa.tipo_precio === "SUMA";
-
-    // Columna "Precio Alternativa": solo se muestra en alternativas SUMA.
-    // En TOTAL se deja vacía (sin guion, sin placeholder).
+    // ===== COLUMNA 2: PRECIO ALTERNATIVA (centrado horizontal y vertical) =====
     if (esSuma) {
+      // Calcular el centro vertical de la columna 2
+      const yCentroCol2 = yFila + altoFila / 2;
+      
+      // Etiqueta "Precio Alternativa" - centrada justo encima del centro
       doc.setFontSize(7);
       doc.setTextColor(...COLOR_GRIS_OSCURO);
       doc.text(
         "Precio Alternativa",
         xColPrecioAlt + anchoPrecio / 2,
-        yFila + 5,
+        yCentroCol2 - 2.5,
         {
           align: "center",
         },
       );
 
+      // Valor del precio - centrado justo debajo del centro
       doc.setFontSize(10.5);
       doc.setFont(undefined, "bold");
       doc.setTextColor(...COLOR_NARANJA);
       doc.text(
         formatearPrecio(alternativa.precio),
         xColPrecioAlt + anchoPrecio / 2,
-        yFila + 10,
+        yCentroCol2 + 3.5,
         { align: "center" },
       );
       doc.setFont(undefined, "normal");
       doc.setTextColor(...COLOR_NEGRO);
     }
 
-    // Columna "Precio Final": en SUMA es precioFinal + alternativa.precio;
-    // en TOTAL, el valor cargado ya representa el precio final completo.
-    const precioFinalMostrado = esSuma
-      ? Number(precioFinal || 0) + Number(alternativa.precio || 0)
-      : Number(alternativa.precio || 0);
+        // ===== COLUMNA 3: PRECIO FINAL =====
+    if (!descuentoAplicado) {
+      // Sin descuento: todo centrado verticalmente en la fila
+      const yCentroCol3 = yFila + altoFila / 2;
+      
+      // Etiqueta "Precio Final" - centrada justo encima del centro
+      doc.setFontSize(7);
+      doc.setTextColor(...COLOR_GRIS_OSCURO);
+      doc.text("Precio Final", xColPrecioFinal + anchoPrecio / 2, yCentroCol3 - 2.5, {
+        align: "center",
+      });
 
-    doc.setFontSize(7);
-    doc.setTextColor(...COLOR_GRIS_OSCURO);
-    doc.text("Precio Final", xColPrecioFinal + anchoPrecio / 2, yFila + 5, {
-      align: "center",
-    });
+      // Precio final en naranja - centrado justo debajo del centro
+      doc.setFontSize(10.5);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(...COLOR_NARANJA);
+      doc.text(
+        formatearPrecio(precioFinalEfectivo),
+        xColPrecioFinal + anchoPrecio / 2,
+        yCentroCol3 + 3.5,
+        { align: "center" },
+      );
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(...COLOR_NEGRO);
+    } else {
+      // Con descuento: estructura de 3 líneas centradas
+      // Etiqueta "Precio Final" - centrada arriba
+      doc.setFontSize(7);
+      doc.setTextColor(...COLOR_GRIS_OSCURO);
+      doc.text("Precio Final", xColPrecioFinal + anchoPrecio / 2, yFila + 4.5, {
+        align: "center",
+      });
 
-    doc.setFontSize(10.5);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(...COLOR_NARANJA);
-    doc.text(
-      formatearPrecio(precioFinalMostrado),
-      xColPrecioFinal + anchoPrecio / 2,
-      yFila + 10,
-      { align: "center" },
-    );
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(...COLOR_NEGRO);
+      // Precio Final (sin descuento) en gris oscuro (más pequeño)
+      doc.setFontSize(8.5);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(...COLOR_GRIS_OSCURO);
+      doc.text(
+        formatearPrecio(precioFinalEfectivo),
+        xColPrecioFinal + anchoPrecio / 2,
+        yFila + 8.5,
+        { align: "center" },
+      );
+      doc.setFont(undefined, "normal");
 
-    yCursor += altoFilaAlternativa;
+      // Línea intermedia del descuento: compacta, verde grisáceo, con flecha.
+      const textoDescuentoFila =
+        descuentoTipo === "porcentaje"
+          ? `${descuentoValorNumerico}%`
+          : `${formatearPrecio(montoDescuento)}`;
+
+      doc.setFontSize(6.5);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(...COLOR_VERDE_DESCUENTO);
+      
+      // Dibujar el texto del descuento centrado
+      const anchoTextoDesc = doc.getTextWidth(textoDescuentoFila);
+      const xCentroCol = xColPrecioFinal + anchoPrecio / 2;
+      const xInicioTexto = xCentroCol - anchoTextoDesc / 2;
+      
+      doc.text(textoDescuentoFila, xInicioTexto, yFila + 13.5);
+      
+      // Dibujar la flecha a la derecha del texto, alineada verticalmente
+      const xFlecha = xInicioTexto + anchoTextoDesc + 1.5;
+      dibujarFlechaAbajo(doc, xFlecha, yFila + 11.5, 2);
+
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(...COLOR_NEGRO);
+
+      // Precio con descuento: naranja (más grande)
+      doc.setFontSize(11);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(...COLOR_NARANJA);
+      doc.text(
+        formatearPrecio(precioFinalConDescuento),
+        xColPrecioFinal + anchoPrecio / 2,
+        yFila + 18.5,
+        { align: "center" },
+      );
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(...COLOR_NEGRO);
+    }
+
+    yCursor += altoFila;
   });
 
   const altoCuerpo = yCursor - yInicioFilas;
@@ -265,6 +395,8 @@ export async function generarPDF({
   precioOpcional,
   totalConOpcional,
   alternativas,
+  descuentoTipo,
+  descuentoValor,
 }) {
   const doc = new jsPDF();
 
@@ -446,7 +578,7 @@ export async function generarPDF({
     y += 3; // opcionales → total
   }
 
-  // TOTAL PRESUPUESTADO (caja blanca, barra gris oscuro, único elemento naranja: el precio principal)
+    // TOTAL PRESUPUESTADO (caja blanca, barra gris oscuro, único elemento naranja: el precio principal)
 
   const altoBarraTotal = 7;
 
@@ -461,28 +593,107 @@ export async function generarPDF({
   });
   doc.setFont(undefined, "normal");
 
-  doc.setFontSize(17);
-  doc.setFont(undefined, "bold");
-  doc.setTextColor(...COLOR_NARANJA);
-  doc.text(
-    formatearPrecio(precioFinal),
-    anchoHoja / 2,
-    y + altoBarraTotal + 10,
-    {
-      align: "center",
-    },
-  );
-  doc.setFont(undefined, "normal");
-  doc.setTextColor(...COLOR_NEGRO);
+  // El descuento pertenece al presupuesto: se resuelve exclusivamente vía el
+  // dominio financiero (misma fuente de verdad que el resto de la app). Acá
+  // solo se decide cómo se presenta, no se reimplementa ninguna fórmula.
+  const { descuentoAplicado, montoDescuento, descuentoValorNumerico, precioFinalConDescuento } =
+    calcularResumenFinanciero({
+      costoMateriales: 0,
+      costoManoObra: 0,
+      consumiblesImprevistos: 0,
+      porcentajeGanancia: 0,
+      flete: 0,
+      precioFinal,
+      descuentoTipo,
+      descuentoValor,
+    });
+
+  const hayDescuentoTotal = descuentoAplicado;
+  // Alto extra que ocupa la línea intermedia del descuento. Sin descuento
+  // queda en 0: el bloque se ve pixel a pixel igual que antes.
+  const altoExtraDescuentoTotal = hayDescuentoTotal ? 12 : 0;
+
+  if (!hayDescuentoTotal) {
+    // Comportamiento actual, sin ningún cambio.
+    doc.setFontSize(17);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_NARANJA);
+    doc.text(
+      formatearPrecio(precioFinal),
+      anchoHoja / 2,
+      y + altoBarraTotal + 10,
+      {
+        align: "center",
+      },
+    );
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...COLOR_NEGRO);
+  } else {
+    // Precio original: se conserva visible pero deja de ser el protagonista
+    // (gris oscuro, tamaño reducido).
+    doc.setFontSize(11);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_GRIS_OSCURO);
+    doc.text(
+      formatearPrecio(precioFinal),
+      anchoHoja / 2,
+      y + altoBarraTotal + 7,
+      { align: "center" },
+    );
+    doc.setFont(undefined, "normal");
+
+    // Línea intermedia del descuento: compacta, verde grisáceo, con flecha.
+    const textoDescuentoTotal =
+      descuentoTipo === "porcentaje"
+        ? `Descuento aplicado: ${descuentoValorNumerico}%`
+        : `Descuento aplicado: -${formatearPrecio(montoDescuento)}`;
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_VERDE_DESCUENTO);
+    
+    // Dibujar el texto del descuento centrado
+    const anchoTextoDescTotal = doc.getTextWidth(textoDescuentoTotal);
+    const xCentroTotal = anchoHoja / 2;
+    const xInicioDescTotal = xCentroTotal - anchoTextoDescTotal / 2;
+    
+    doc.text(textoDescuentoTotal, xInicioDescTotal, y + altoBarraTotal + 13.5);
+    
+    // Dibujar la flecha a la derecha del texto, alineada verticalmente
+    const xFlechaTotal = xInicioDescTotal + anchoTextoDescTotal + 2;
+    dibujarFlechaAbajo(doc, xFlechaTotal, y + altoBarraTotal + 11, 2.2);
+    
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...COLOR_NEGRO);
+
+    // Precio final con descuento: mismo tratamiento que tenía el precio
+    // único antes (naranja, 17pt) — es el importe que ahora tiene la
+    // jerarquía principal, el que efectivamente se cobra.
+    doc.setFontSize(17);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...COLOR_NARANJA);
+    doc.text(
+      formatearPrecio(precioFinalConDescuento),
+      anchoHoja / 2,
+      y + altoBarraTotal + 10 + altoExtraDescuentoTotal,
+      { align: "center" },
+    );
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...COLOR_NEGRO);
+  }
 
   // Acento visual: dos líneas finas naranjas flanqueando el importe
   // principal, inspiradas en la referencia estética. Puramente decorativo,
   // no altera el cálculo ni la jerarquía (el importe sigue siendo el
-  // elemento más grande y destacado del documento).
-  const anchoTextoTotal = doc.getTextWidth(formatearPrecio(precioFinal));
+  // elemento más grande y destacado del documento). Cuando hay descuento,
+  // flanquean el importe con descuento (el que está en naranja).
+  const importePrincipalTotal = hayDescuentoTotal
+    ? precioFinalConDescuento
+    : precioFinal;
+  const anchoTextoTotal = doc.getTextWidth(formatearPrecio(importePrincipalTotal));
   doc.setDrawColor(...COLOR_NARANJA);
   doc.setLineWidth(0.4);
-  const yLineaTotal = y + altoBarraTotal + 7;
+  const yLineaTotal = y + altoBarraTotal + 7 + altoExtraDescuentoTotal;
   const semiAnchoTexto = anchoTextoTotal / 2 + 6;
   doc.line(
     anchoHoja / 2 - semiAnchoTexto - 14,
@@ -498,11 +709,16 @@ export async function generarPDF({
   );
   doc.setDrawColor(...COLOR_NEGRO);
 
-  let altoCajaTotal = altoBarraTotal + 17;
+  let altoCajaTotal = altoBarraTotal + 17 + altoExtraDescuentoTotal;
 
   if (opcionales?.trim()) {
     doc.setDrawColor(...COLOR_GRIS_BORDE);
-    doc.line(margen + 20, y + 23, margen + anchoUtil - 20, y + 23);
+    doc.line(
+      margen + 20,
+      y + 23 + altoExtraDescuentoTotal,
+      margen + anchoUtil - 20,
+      y + 23 + altoExtraDescuentoTotal,
+    );
 
     doc.setFontSize(9);
     doc.setTextColor(...COLOR_NEGRO);
@@ -510,25 +726,35 @@ export async function generarPDF({
     doc.text(
       `Valor Opcional: ${formatearPrecio(precioOpcional)}`,
       anchoHoja / 2,
-      y + 29,
+      y + 29 + altoExtraDescuentoTotal,
       { align: "center" },
     );
 
     doc.setFont(undefined, "bold");
 
-    doc.text("TOTAL CON OPCIONAL", anchoHoja / 2, y + 36, {
-      align: "center",
-    });
+    doc.text(
+      "TOTAL CON OPCIONAL",
+      anchoHoja / 2,
+      y + 36 + altoExtraDescuentoTotal,
+      {
+        align: "center",
+      },
+    );
 
     doc.setFontSize(12);
 
-    doc.text(formatearPrecio(totalConOpcional), anchoHoja / 2, y + 43, {
-      align: "center",
-    });
+    doc.text(
+      formatearPrecio(totalConOpcional),
+      anchoHoja / 2,
+      y + 43 + altoExtraDescuentoTotal,
+      {
+        align: "center",
+      },
+    );
 
     doc.setFont(undefined, "normal");
 
-    altoCajaTotal = 47;
+    altoCajaTotal = 47 + altoExtraDescuentoTotal;
   }
 
   doc.setDrawColor(...COLOR_GRIS_BORDE);
@@ -549,6 +775,8 @@ export async function generarPDF({
       anchoUtil,
       alternativas,
       precioFinal,
+      descuentoTipo,
+      descuentoValor,
     );
     y += 3; // alternativas → footer
   }
@@ -582,8 +810,8 @@ export async function generarPDF({
   doc.setTextColor(...COLOR_BLANCO);
 
   const textoEmpresa1 = "CARPINTERÍA Y HERRERÍA ";
-  const textoEmpresa2 = " VALVERDE";
-  const xTextoEmpresa = margen + 6;
+  const textoEmpresa2 = " VALVERDE ";
+    const xTextoEmpresa = margen + 6;
 
   doc.text(textoEmpresa1, xTextoEmpresa, centroYFooter + offsetYTexto);
 
