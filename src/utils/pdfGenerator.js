@@ -119,13 +119,20 @@ function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
     align: "center",
   });
 
+  // Normaliza distintos formatos de viñetas para que el PDF siempre utilice "•"
+  function normalizarLineaPDF(linea) {
+    return linea.replace(/^\s*([*-])\s+/, "• ");
+  }
+
   // Cuerpo del texto: caja blanca (sin fondo), texto negro, alineado a la
   // izquierda (nunca justificado).
   doc.setFont(undefined, "normal");
   doc.setFontSize(fontSizeTexto);
   doc.setTextColor(...COLOR_NEGRO);
 
-  const lineas = doc.splitTextToSize(texto || "", ancho - 8);
+  const lineas = doc
+    .splitTextToSize(texto || "", ancho - 8)
+    .map(normalizarLineaPDF);
 
   doc.text(lineas, x + 4, y + altoBarraTitulo + 5, {
     lineHeightFactor,
@@ -134,10 +141,6 @@ function dibujarCaja(doc, x, y, ancho, titulo, texto, fontSizeTexto = 9) {
   });
 
   // Alto del texto en base al tamaño de fuente real y el interlineado 1.5
-  // (no se tocó la lógica de splitTextToSize, solo el cálculo de alto que
-  // depende del tamaño de fuente para que la caja no quede corta; se
-  // ajustó 1mm respecto a la versión anterior para achicar espacio
-  // sobrante, en línea con "reducir espacios innecesarios").
   const altoLineaMM = fontSizeTexto * 0.3528 * lineHeightFactor; // pt → mm
   const altoTexto = lineas.length * altoLineaMM + altoBarraTitulo + 9;
 

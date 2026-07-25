@@ -200,7 +200,7 @@ FORMATO
 - Escribir en párrafos claros y ordenados.
 - Mantener buena legibilidad.
 - Utilizar viñetas cuando mejoren la organización del contenido.
-- Utilizar títulos generales.
+- No utilizar títulos generales.
 - No utilizar emojis.
 - No utilizar texto en mayúsculas completas.
 - No agregar explicaciones fuera de la descripción.
