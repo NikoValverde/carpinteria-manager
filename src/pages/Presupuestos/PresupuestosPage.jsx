@@ -96,12 +96,6 @@ function PresupuestosPage() {
     }
   }
 
-  function generarNumeroPresupuesto() {
-    const siguiente = presupuestos.length + 1;
-
-    return `PV-${String(siguiente).padStart(4, "0")}`;
-  }
-
   async function cargarClientes() {
     try {
       const data = await obtenerClientes();
@@ -133,8 +127,6 @@ function PresupuestosPage() {
 
     try {
       await crearPresupuesto({
-        numero: generarNumeroPresupuesto(),
-
         cliente_id: Number(clienteId),
 
         titulo,
